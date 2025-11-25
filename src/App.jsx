@@ -111,10 +111,8 @@ function App() {
     });
   };
 
-  const handleProofConfirm = () => {
-    if (activeHabit) {
-      updateHistory(activeHabit.id);
-    }
+  const handleProofConfirm = (habitId) => {
+    updateHistory(habitId || activeHabit?.id);
   };
 
   const handleShare = async () => {

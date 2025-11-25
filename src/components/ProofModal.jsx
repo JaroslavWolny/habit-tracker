@@ -37,8 +37,8 @@ const ProofModal = ({ isOpen, onClose, onConfirm, habit }) => {
         }
 
         // Call onConfirm immediately to update state
-        console.log("Verifying habit completion...");
-        onConfirm();
+        console.log("Verifying habit completion for:", habit?.id);
+        onConfirm(habit?.id);
 
         // Close modal after a short delay to show success state
         setTimeout(() => {
