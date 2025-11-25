@@ -8,6 +8,14 @@ const ProofModal = ({ isOpen, onClose, onConfirm, habit }) => {
     const webcamRef = useRef(null);
     const [imgSrc, setImgSrc] = useState(null);
     const [verifying, setVerifying] = useState(false);
+    // Store the habit ID being verified to prevent race conditions
+    const currentHabitId = useRef(null);
+
+    React.useEffect(() => {
+        if (isOpen && habit) {
+            currentHabitId.current = habit.id;
+        }
+    }, [isOpen, habit]);
 
     const capture = useCallback(() => {
         const imageSrc = webcamRef.current.getScreenshot();
@@ -37,8 +45,9 @@ const ProofModal = ({ isOpen, onClose, onConfirm, habit }) => {
         }
 
         // Call onConfirm immediately to update state
-        console.log("Verifying habit completion for:", habit?.id);
-        onConfirm(habit?.id);
+        const idToConfirm = currentHabitId.current || habit?.id;
+        console.log("Verifying habit completion for:", idToConfirm);
+        onConfirm(idToConfirm);
 
         // Close modal after a short delay to show success state
         setTimeout(() => {

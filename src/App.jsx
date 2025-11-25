@@ -93,8 +93,16 @@ function App() {
   };
 
   const updateHistory = (id) => {
+    if (!id) {
+      console.error("Attempted to update history with no ID");
+      return;
+    }
+
+    const date = new Date();
+    const currentToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
     setHistory(prev => {
-      const todayCompleted = prev[today] || [];
+      const todayCompleted = prev[currentToday] || [];
       const isCompleted = todayCompleted.includes(id);
 
       let newTodayCompleted;
@@ -106,13 +114,17 @@ function App() {
 
       return {
         ...prev,
-        [today]: newTodayCompleted
+        [currentToday]: newTodayCompleted
       };
     });
   };
 
   const handleProofConfirm = (habitId) => {
-    updateHistory(habitId || activeHabit?.id);
+    const idToUpdate = habitId || activeHabit?.id;
+    console.log("Confirming proof for ID:", idToUpdate);
+    if (idToUpdate) {
+      updateHistory(idToUpdate);
+    }
   };
 
   const handleShare = async () => {

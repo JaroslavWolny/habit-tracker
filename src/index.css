@@ -44,33 +44,36 @@ body {
 
 #root {
   width: 100%;
-  max-width: 1000px;
-  padding: 2rem;
-  padding-top: env(safe-area-inset-top, 2rem);
-  padding-bottom: env(safe-area-inset-bottom, 2rem);
+  max-width: 100%;
+  padding: 0;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-container {
-  display: grid;
-  grid-template-columns: 1fr 350px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.5rem;
   gap: 2rem;
-  align-items: start;
+  flex: 1;
 }
 
+/* Mobile Optimization */
 @media (max-width: 800px) {
   .app-container {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  #root {
     padding: 1rem;
-    padding-top: max(1rem, env(safe-area-inset-top));
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    gap: 1.5rem;
   }
 
   h1 {
-    font-size: 2rem;
+    font-size: 2.5rem;
+    text-align: left;
   }
 }
 
