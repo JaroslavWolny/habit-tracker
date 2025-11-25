@@ -173,12 +173,11 @@ function App() {
         <button className="glass-button share-btn" onClick={handleShare}>
           Share Progress 📸
         </button>
-      </div>
 
-      <div className="side-panel">
-        <Award show={isAllDone} />
         <Calendar history={history} habits={habits} />
       </div>
+
+      <Award show={isAllDone} />
 
       {/* Hidden Share Card */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>

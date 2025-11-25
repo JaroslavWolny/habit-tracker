@@ -36,22 +36,30 @@ body {
 #root {
   width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .app-container {
   width: 100%;
-  max-width: 480px;
-  /* Mobile-focused width */
+  max-width: 100%;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: env(safe-area-inset-top, 1rem) 1rem env(safe-area-inset-bottom, 1rem) 1rem;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
   flex: 1;
+}
+
+/* Main content wrapper */
+.glass-panel.main-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
 /* Header Section */
@@ -59,31 +67,36 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  gap: 1rem;
 }
 
 h1 {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 800;
   background: linear-gradient(to right, #fff, #a5b4fc);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   letter-spacing: -0.05em;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .streak-display {
   background: rgba(255, 165, 0, 0.1);
   border: 1px solid rgba(255, 165, 0, 0.2);
   color: #fbbf24;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
+  padding: 0.75rem 1rem;
+  border-radius: 16px;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Glass Panels */
@@ -100,11 +113,11 @@ h1 {
 /* Add Habit Input */
 .add-habit-form {
   display: flex;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
+  gap: 0.5rem;
+  align-items: center;
   background: rgba(255, 255, 255, 0.03);
   padding: 0.5rem;
-  border-radius: 24px;
+  border-radius: 20px;
   border: 1px solid var(--glass-border);
 }
 
@@ -112,7 +125,7 @@ h1 {
   flex: 1;
   background: transparent;
   border: none;
-  padding: 1rem;
+  padding: 0.875rem;
   font-size: 1rem;
   color: white;
   font-family: var(--font-main);
@@ -130,10 +143,15 @@ h1 {
   background: var(--primary);
   color: white;
   border: none;
-  border-radius: 20px;
-  padding: 0 1.5rem;
+  border-radius: 16px;
+  padding: 0.875rem 1rem;
   font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
   transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3);
 }
@@ -152,13 +170,13 @@ h1 {
 .habit-item {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 24px;
-  padding: 0.5rem;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  min-height: 64px;
 }
 
 .habit-item:active {
@@ -175,18 +193,20 @@ h1 {
   display: flex;
   align-items: center;
   padding: 1rem;
-  gap: 1rem;
+  gap: 0.875rem;
   cursor: pointer;
+  min-height: 48px;
 }
 
 .habit-checkbox {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2.5px solid rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: all 0.3s ease;
 }
 
@@ -197,10 +217,11 @@ h1 {
 }
 
 .habit-text {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--text-primary);
   transition: opacity 0.3s;
+  line-height: 1.4;
 }
 
 .habit-item.completed .habit-text {
@@ -210,10 +231,34 @@ h1 {
 
 .habit-actions {
   display: flex;
-  gap: 0.5rem;
-  padding-right: 1rem;
-  opacity: 0;
+  gap: 0.25rem;
+  padding-right: 0.75rem;
+  opacity: 1;
   transition: opacity 0.2s;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+.icon-btn:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.delete-btn:active {
+  background: rgba(239, 68, 68, 0.2);
 }
 
 .habit-item:hover .habit-actions,
@@ -224,28 +269,34 @@ h1 {
 /* Share Button */
 .share-btn {
   width: 100%;
-  padding: 1.25rem;
-  margin-top: 1rem;
-  border-radius: 24px;
+  padding: 1rem;
+  margin-top: auto;
+  border-radius: 20px;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.5px;
   box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+  min-height: 52px;
+}
+
+/* Side Panel - Hide on mobile by default */
+.side-panel {
+  display: none;
 }
 
 /* Calendar Widget */
 .calendar-container {
   background: rgba(0, 0, 0, 0.2);
-  border-radius: 32px;
-  padding: 1.5rem;
-  margin-top: 2rem;
+  border-radius: 24px;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
 }
 
 .calendar-header {
   text-align: center;
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
+  margin-bottom: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--text-secondary);
 }
@@ -317,23 +368,25 @@ h1 {
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 3rem 2rem;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 100%);
+  padding: 2rem 1.5rem;
+  padding-bottom: max(2rem, env(safe-area-inset-bottom, 0px) + 1.5rem);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, transparent 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .capture-btn {
-  width: 84px;
-  height: 84px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
-  border: 4px solid rgba(255, 255, 255, 0.5);
+  border: 4px solid white;
   padding: 4px;
   background: transparent;
   cursor: pointer;
-  transition: transform 0.1s;
+  transition: transform 0.15s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .capture-btn:active {
@@ -350,20 +403,97 @@ h1 {
 
 .close-proof-btn {
   position: absolute;
-  top: max(2rem, env(safe-area-inset-top));
+  top: max(1.5rem, env(safe-area-inset-top, 0px) + 1rem);
   right: 1.5rem;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
+
+.camera-overlay h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: white;
+  font-weight: 700;
+}
+
+.camera-overlay p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 1rem;
+  max-width: 90%;
+  text-align: center;
+}
+
+/* Verification States */
+.verification-view {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.proof-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.verification-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+  color: var(--primary);
+  margin-bottom: 1.5rem;
+}
+
+.success-icon {
+  color: var(--success);
+  margin-bottom: 1.5rem;
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.verifying-status,
+.success-status {
+  text-align: center;
+  padding: 2rem;
+}
+
+.verifying-status h3,
+.success-status h3 {
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.verifying-status p,
+.success-status p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
 
 /* Animations */
 @keyframes fadeIn {
