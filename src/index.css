@@ -72,7 +72,7 @@ body::before {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  padding: env(safe-area-inset-top, 1rem) 1rem env(safe-area-inset-bottom, 1rem) 1rem;
+  padding: max(env(safe-area-inset-top), 3rem) 1rem env(safe-area-inset-bottom, 1rem) 1rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
