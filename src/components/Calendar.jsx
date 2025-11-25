@@ -95,18 +95,16 @@ const Calendar = ({ history, habits }) => {
                             new Date().getFullYear() === year;
 
                         return (
-                            <motion.div
+                            <div
                                 key={day}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setSelectedDay(day)}
                                 className={`calendar-day ${status} ${isToday ? 'today' : ''}`}
                                 style={{
                                     '--opacity': status === 'partial' ? 0.3 + (percentage * 0.5) : 1
                                 }}
+                                title={`${status === 'perfect' ? 'All done!' : status === 'partial' ? 'Some done' : 'None done'}`}
                             >
                                 {day}
-                            </motion.div>
+                            </div>
                         );
                     })}
                 </motion.div>
@@ -116,54 +114,6 @@ const Calendar = ({ history, habits }) => {
                 <div className="legend-item"><span className="dot perfect"></span> Perfect</div>
                 <div className="legend-item"><span className="dot partial"></span> Partial</div>
             </div>
-
-            {/* Day Detail Modal */}
-            <AnimatePresence>
-                {selectedDay && (
-                    <motion.div
-                        className="calendar-modal-overlay"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setSelectedDay(null)}
-                    >
-                        <motion.div
-                            className="calendar-modal"
-                            initial={{ scale: 0.8, opacity: 0, y: 20 }}
-                            animate={{ scale: 1, opacity: 1, y: 0 }}
-                            exit={{ scale: 0.8, opacity: 0, y: 20 }}
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="modal-header">
-                                <h4>{monthNames[month]} {selectedDay}</h4>
-                                <button onClick={() => setSelectedDay(null)} className="icon-btn"><X size={16} /></button>
-                            </div>
-
-                            <div className="modal-content">
-                                {(() => {
-                                    const data = getDayData(selectedDay);
-                                    if (data.relevantHabits.length === 0) {
-                                        return <p className="empty-text">No habits set for this day.</p>;
-                                    }
-                                    return (
-                                        <div className="modal-habit-list">
-                                            {data.relevantHabits.map(h => {
-                                                const isDone = data.completedIds.includes(h.id);
-                                                return (
-                                                    <div key={h.id} className={`modal-habit-item ${isDone ? 'done' : ''}`}>
-                                                        <span className="status-icon">{isDone ? '✅' : '⭕️'}</span>
-                                                        <span>{h.text}</span>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    );
-                                })()}
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </div>
     );
 };
