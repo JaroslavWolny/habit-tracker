@@ -61,7 +61,30 @@ function App() {
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
       const completedIds = history[dateStr] || [];
-      if (habits.length > 0 && completedIds.length === habits.length) {
+
+      // Filter habits that existed on this date
+      // We assume habit.id is a timestamp of creation for new habits
+      const endOfDay = new Date(d);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const relevantHabits = habits.filter(h => {
+        // For today (i=0), consider all active habits to avoid issues with clock skew
+        if (i === 0) return true;
+
+        // If id is not a number (legacy data), assume it existed
+        if (typeof h.id !== 'number') return true;
+        return h.id <= endOfDay.getTime();
+      });
+
+      // If no habits existed that day, it doesn't count towards streak
+      if (relevantHabits.length === 0) {
+        if (i === 0) continue;
+        break;
+      }
+
+      const allCompleted = relevantHabits.every(h => completedIds.includes(h.id));
+
+      if (allCompleted) {
         streak++;
       } else if (i === 0) {
         continue;
