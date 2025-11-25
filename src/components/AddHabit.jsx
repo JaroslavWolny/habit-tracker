@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Plus } from 'lucide-react';
 
 const AddHabit = ({ onAdd }) => {
     const [text, setText] = useState('');
@@ -12,7 +13,7 @@ const AddHabit = ({ onAdd }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ marginBottom: '2rem', display: 'flex', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} className="add-habit-form">
             <input
                 type="text"
                 className="glass-input"
@@ -21,7 +22,7 @@ const AddHabit = ({ onAdd }) => {
                 onChange={(e) => setText(e.target.value)}
             />
             <button type="submit" className="glass-button">
-                Add
+                <Plus size={24} />
             </button>
         </form>
     );
