@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
+import confetti from 'canvas-confetti';
 import HabitList from './components/HabitList';
 import AddHabit from './components/AddHabit';
 import Calendar from './components/Calendar';
 import Award from './components/Award';
 import ShareCard from './components/ShareCard';
-import ProofModal from './components/ProofModal';
 
 function App() {
   const [habits, setHabits] = useState(() => {
@@ -18,10 +18,12 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  const shareRef = useRef(null);
+  const [xp, setXp] = useState(() => {
+    const saved = localStorage.getItem('user_xp');
+    return saved ? parseInt(saved) : 0;
+  });
 
-  const [proofModalOpen, setProofModalOpen] = useState(false);
-  const [activeHabit, setActiveHabit] = useState(null);
+  const shareRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem('habits_def', JSON.stringify(habits));
@@ -31,6 +33,10 @@ function App() {
     localStorage.setItem('habit_history', JSON.stringify(history));
   }, [history]);
 
+  useEffect(() => {
+    localStorage.setItem('user_xp', xp.toString());
+  }, [xp]);
+
   const getTodayStr = () => {
     const date = new Date();
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -38,23 +44,26 @@ function App() {
 
   const today = getTodayStr();
 
-  // Calculate Streak
+  const calculateLevel = () => {
+    return Math.floor(xp / 100) + 1;
+  };
+
+  const level = calculateLevel();
+  const xpProgress = xp % 100;
+
   const calculateStreak = () => {
     let streak = 0;
     const todayDate = new Date();
 
-    // Check yesterday backwards
     for (let i = 0; i < 365; i++) {
       const d = new Date();
       d.setDate(todayDate.getDate() - i);
       const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
       const completedIds = history[dateStr] || [];
-      // If we have habits and all are completed
       if (habits.length > 0 && completedIds.length === habits.length) {
         streak++;
       } else if (i === 0) {
-        // If today is not done, don't break streak yet, just don't count it if it's 0
         continue;
       } else {
         break;
@@ -78,26 +87,6 @@ function App() {
   };
 
   const toggleHabit = (id) => {
-    // Check if we are completing (not un-completing)
-    const isCompleted = (history[today] || []).includes(id);
-
-    if (!isCompleted) {
-      // Open proof modal
-      const habit = habits.find(h => h.id === id);
-      setActiveHabit(habit);
-      setProofModalOpen(true);
-    } else {
-      // Just toggle off
-      updateHistory(id);
-    }
-  };
-
-  const updateHistory = (id) => {
-    if (!id) {
-      console.error("Attempted to update history with no ID");
-      return;
-    }
-
     const date = new Date();
     const currentToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
@@ -108,8 +97,17 @@ function App() {
       let newTodayCompleted;
       if (isCompleted) {
         newTodayCompleted = todayCompleted.filter(hId => hId !== id);
+        setXp(prevXp => Math.max(0, prevXp - 10));
       } else {
         newTodayCompleted = [...todayCompleted, id];
+        setXp(prevXp => prevXp + 10);
+
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#d946ef', '#8b5cf6', '#06b6d4', '#10b981']
+        });
       }
 
       return {
@@ -119,23 +117,14 @@ function App() {
     });
   };
 
-  const handleProofConfirm = (habitId) => {
-    const idToUpdate = habitId || activeHabit?.id;
-    console.log("Confirming proof for ID:", idToUpdate);
-    if (idToUpdate) {
-      updateHistory(idToUpdate);
-    }
-  };
-
   const handleShare = async () => {
     if (shareRef.current) {
       const canvas = await html2canvas(shareRef.current, {
         backgroundColor: '#0a0a0a',
-        scale: 2 // High res
+        scale: 2
       });
       const image = canvas.toDataURL("image/png");
 
-      // Create a link to download
       const link = document.createElement('a');
       link.href = image;
       link.download = `habit-streak-${today}.png`;
@@ -148,17 +137,29 @@ function App() {
     completed: (history[today] || []).includes(h.id)
   }));
 
-  // Fix: Ensure we only count completed habits that still exist
   const completedCount = (history[today] || []).filter(id => habits.some(h => h.id === id)).length;
   const isAllDone = habits.length > 0 && completedCount === habits.length;
 
   return (
     <div className="app-container">
+      <Award show={isAllDone} />
+
       <div className="glass-panel main-panel">
         <div className="header-row">
           <h1>Habit Tracker</h1>
           <div className="streak-display">
             🔥 {streak}
+          </div>
+        </div>
+
+        <div className="rpg-stats">
+          <div className="level-badge">
+            <span className="level-label">LVL</span>
+            <span className="level-number">{level}</span>
+          </div>
+          <div className="xp-bar-container">
+            <div className="xp-bar" style={{ width: `${xpProgress}%` }}></div>
+            <span className="xp-text">{xpProgress} / 100 XP</span>
           </div>
         </div>
 
@@ -177,9 +178,6 @@ function App() {
         <Calendar history={history} habits={habits} />
       </div>
 
-      <Award show={isAllDone} />
-
-      {/* Hidden Share Card */}
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>
         <ShareCard
           ref={shareRef}
@@ -188,13 +186,6 @@ function App() {
           todayHabits={todayHabits}
         />
       </div>
-
-      <ProofModal
-        isOpen={proofModalOpen}
-        onClose={() => setProofModalOpen(false)}
-        onConfirm={handleProofConfirm}
-        habit={activeHabit}
-      />
     </div>
   );
 }
