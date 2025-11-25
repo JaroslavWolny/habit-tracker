@@ -74,8 +74,22 @@ function App() {
 
   const streak = calculateStreak();
 
+  const triggerHaptic = (type = 'light') => {
+    if (navigator.vibrate) {
+      // Simple vibration patterns
+      const patterns = {
+        light: 10,
+        medium: 20,
+        heavy: 40,
+        success: [10, 30, 10]
+      };
+      navigator.vibrate(patterns[type] || 10);
+    }
+  };
+
   const addHabit = (text) => {
     setHabits([...habits, { id: Date.now(), text }]);
+    triggerHaptic('light');
   };
 
   const editHabit = (id, newText) => {
@@ -84,6 +98,7 @@ function App() {
 
   const deleteHabit = (id) => {
     setHabits(habits.filter(h => h.id !== id));
+    triggerHaptic('medium');
   };
 
   const toggleHabit = (id) => {
@@ -98,9 +113,11 @@ function App() {
       if (isCompleted) {
         newTodayCompleted = todayCompleted.filter(hId => hId !== id);
         setXp(prevXp => Math.max(0, prevXp - 10));
+        triggerHaptic('light');
       } else {
         newTodayCompleted = [...todayCompleted, id];
         setXp(prevXp => prevXp + 10);
+        triggerHaptic('success');
 
         confetti({
           particleCount: 100,

@@ -21,7 +21,7 @@ const AddHabit = ({ onAdd }) => {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
             />
-            <button type="submit" className="glass-button">
+            <button type="submit" className="glass-button" aria-label="Add habit">
                 <Plus size={24} />
             </button>
         </form>

@@ -70,13 +70,14 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
 
         <div className="habit-actions" onClick={(e) => e.stopPropagation()}>
           {isEditing ? (
-            <button className="icon-btn save-btn" onClick={handleSave}><Save size={18} /></button>
+            <button className="icon-btn save-btn" onClick={handleSave} aria-label="Save habit"><Save size={18} /></button>
           ) : (
-            <button className="icon-btn edit-btn" onClick={() => setIsEditing(true)}><Edit2 size={18} /></button>
+            <button className="icon-btn edit-btn" onClick={() => setIsEditing(true)} aria-label="Edit habit"><Edit2 size={18} /></button>
           )}
           <button
             className={`icon-btn delete-btn ${showConfirm ? 'confirming' : ''}`}
             onClick={handleDelete}
+            aria-label="Delete habit"
           >
             {showConfirm ? <Trash2 size={18} color="#ef4444" /> : <X size={18} />}
           </button>
