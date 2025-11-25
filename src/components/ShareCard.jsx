@@ -17,7 +17,17 @@ const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
     const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
 
     return (
-        <div ref={ref} className="share-card-container">
+        <div ref={ref} className="share-card-container" style={{
+            width: '1080px',
+            height: '1920px',
+            background: '#050505',
+            position: 'relative',
+            overflow: 'hidden',
+            fontFamily: "'Outfit', sans-serif",
+            color: 'white',
+            display: 'flex',
+            flexDirection: 'column'
+        }}>
             <div className="share-card-bg"></div>
             <div className="share-content">
                 <div className="share-header">
@@ -40,7 +50,15 @@ const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
 
                     <div className="stat-card rank-card" style={{ '--rank-color': rankColor }}>
                         <span className="stat-label">Daily Rank</span>
-                        <div className="rank-value">{rank}</div>
+                        <div className="rank-value" style={{
+                            fontSize: '64px',
+                            fontWeight: '800',
+                            color: rankColor,
+                            textShadow: '0 0 20px rgba(255, 255, 255, 0.2)',
+                            background: 'none',
+                            webkitBackgroundClip: 'border-box',
+                            backgroundClip: 'border-box'
+                        }}>{rank}</div>
                         <div className="rank-progress">
                             <div className="rank-bar" style={{ width: `${percentage}%`, background: rankColor }}></div>
                         </div>
