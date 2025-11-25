@@ -161,13 +161,14 @@ function App() {
     <div className="app-container">
       <Award show={isAllDone} />
 
-      <div className="glass-panel main-panel">
-        <div className="header-row">
-          <h1>Habit Tracker</h1>
-          <div className="streak-display">
-            🔥 {streak}
-          </div>
+      <div className="header-row">
+        <h1>Habit Tracker</h1>
+        <div className="streak-display">
+          🔥 {streak}
         </div>
+      </div>
+
+      <div className="glass-panel main-panel">
 
         <div className="rpg-stats">
           <div className="level-badge">
