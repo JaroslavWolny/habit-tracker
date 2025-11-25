@@ -25,14 +25,23 @@ const ProofModal = ({ isOpen, onClose, onConfirm, habit }) => {
     };
 
     const triggerSuccess = () => {
-        confetti({
-            particleCount: 150,
-            spread: 100,
-            origin: { y: 0.6 },
-            colors: ['#d946ef', '#8b5cf6', '#06b6d4', '#10b981']
-        });
+        try {
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.6 },
+                colors: ['#d946ef', '#8b5cf6', '#06b6d4', '#10b981']
+            });
+        } catch (e) {
+            console.error("Confetti error:", e);
+        }
+
+        // Call onConfirm immediately to update state
+        console.log("Verifying habit completion...");
+        onConfirm();
+
+        // Close modal after a short delay to show success state
         setTimeout(() => {
-            onConfirm();
             onClose();
             setImgSrc(null);
         }, 1500);
@@ -60,7 +69,7 @@ const ProofModal = ({ isOpen, onClose, onConfirm, habit }) => {
                                 ref={webcamRef}
                                 screenshotFormat="image/jpeg"
                                 className="webcam-feed"
-                                videoConstraints={{ facingMode: "user" }}
+                                videoConstraints={{ facingMode: "environment" }}
                             />
                             <div className="camera-overlay">
                                 <h2>Prove it!</h2>
