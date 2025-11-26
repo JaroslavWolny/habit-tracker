@@ -1,9 +1,17 @@
 import React, { useState } from 'react';
-import { Plus, Dumbbell, Utensils, Moon, Brain } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import './AddHabit.css';
 
 const AddHabit = ({ onAdd }) => {
     const [text, setText] = useState('');
-    const [category, setCategory] = useState('training'); // training, nutrition, recovery, knowledge
+    const [category, setCategory] = useState('training');
+
+    const categories = [
+        { id: 'training', label: 'Training', icon: '🏋️', color: '#39FF14' },
+        { id: 'nutrition', label: 'Nutrition', icon: '🥑', color: '#FF39D1' },
+        { id: 'recovery', label: 'Recovery', icon: '💤', color: '#39D1FF' },
+        { id: 'knowledge', label: 'Knowledge', icon: '🧠', color: '#FFD139' }
+    ];
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -14,36 +22,37 @@ const AddHabit = ({ onAdd }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="add-habit-form">
-            <div className="category-select-wrapper">
-                <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="glass-input category-select"
-                    style={{
-                        width: 'auto',
-                        flex: '0 0 auto',
-                        paddingRight: '1rem',
-                        cursor: 'pointer',
-                        appearance: 'none',
-                        textAlign: 'center'
-                    }}
-                >
-                    <option value="training">🏋️ Training</option>
-                    <option value="nutrition">🍗 Nutrition</option>
-                    <option value="recovery">💤 Recovery</option>
-                    <option value="knowledge">🧠 Knowledge</option>
-                </select>
+        <form onSubmit={handleSubmit} className="add-habit-container-v2">
+            <div className="category-pills">
+                {categories.map((cat) => (
+                    <button
+                        key={cat.id}
+                        type="button"
+                        className={`category-pill ${category === cat.id ? 'active' : ''}`}
+                        onClick={() => setCategory(cat.id)}
+                        style={{
+                            '--pill-color': cat.color,
+                            '--pill-glow': cat.color + '40' // 25% opacity
+                        }}
+                    >
+                        <span className="pill-icon">{cat.icon}</span>
+                        {cat.label}
+                    </button>
+                ))}
             </div>
-            <input
-                type="text"
-                className="glass-input"
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-            />
-            <button type="submit" className="glass-button" aria-label="Add habit">
-                <Plus size={24} />
-            </button>
+
+            <div className="input-area">
+                <input
+                    type="text"
+                    className="habit-input-v2"
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="What is your mission?"
+                />
+                <button type="submit" className="add-btn-v2" aria-label="Add habit">
+                    <Plus />
+                </button>
+            </div>
         </form>
     );
 };
