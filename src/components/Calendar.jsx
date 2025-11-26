@@ -46,7 +46,8 @@ const Calendar = ({ history, habits }) => {
         });
 
         const total = relevantHabits.length;
-        const completed = completedIds.length;
+        // Only count completed habits that are still relevant (exist in habits list)
+        const completed = completedIds.filter(id => relevantHabits.some(h => h.id === id)).length;
         const percentage = total === 0 ? 0 : (completed / total);
 
         let status = 'empty';

@@ -11,7 +11,7 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
   // Category Configuration (Same as AddHabit)
   const categoryConfig = {
     training: { label: 'Training', icon: '🏋️', color: '#39FF14' },
-    nutrition: { label: 'Nutrition', icon: '🥑', color: '#FF39D1' },
+    nutrition: { label: 'Supplements', icon: '🥑', color: '#FF39D1' },
     recovery: { label: 'Recovery', icon: '💤', color: '#39D1FF' },
     knowledge: { label: 'Knowledge', icon: '🧠', color: '#FFD139' },
     default: { label: 'General', icon: '⚡', color: '#FFFFFF' }
@@ -85,12 +85,6 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
             <div className="habit-text-v2">{habit.text}</div>
             <div className="habit-meta">
               <span className="habit-category-label">{style.label}</span>
-              {habit.streak > 0 && (
-                <div className="streak-badge-v2">
-                  <span className="streak-fire">🔥</span>
-                  <span className="streak-val">{habit.streak}</span>
-                </div>
-              )}
             </div>
           </>
         )}
