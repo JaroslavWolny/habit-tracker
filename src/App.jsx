@@ -8,6 +8,7 @@ import Award from './components/Award';
 import ShareCard from './components/ShareCard';
 import LevelUpModal from './components/LevelUpModal';
 import MysteryBoxModal from './components/MysteryBoxModal';
+import AvatarWidget from './components/AvatarWidget';
 
 function App() {
   const [habits, setHabits] = useState(() => {
@@ -175,6 +176,86 @@ function App() {
     localStorage.setItem('user_inventory', JSON.stringify(inventory));
   }, [inventory]);
 
+  const [avatar, setAvatar] = useState(() => {
+    const saved = localStorage.getItem('user_avatar');
+    return saved ? JSON.parse(saved) : {
+      stage: 1,
+      xp: 0,
+      health: 100,
+      maxHealth: 100,
+      isDead: false,
+      lastHealthCheck: new Date().toDateString()
+    };
+  });
+
+  useEffect(() => {
+    localStorage.setItem('user_avatar', JSON.stringify(avatar));
+  }, [avatar]);
+
+  // Health Decay Logic
+  useEffect(() => {
+    const checkHealthDecay = () => {
+      const todayDate = new Date();
+      const lastCheck = new Date(avatar.lastHealthCheck);
+
+      // If already checked today, skip
+      if (lastCheck.toDateString() === todayDate.toDateString()) return;
+
+      // Check yesterday
+      const yesterday = new Date(todayDate);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+      // Get habits that existed yesterday
+      const endOfYesterday = new Date(yesterday);
+      endOfYesterday.setHours(23, 59, 59, 999);
+
+      const yesterdayHabits = habits.filter(h => {
+        if (typeof h.id !== 'number') return true;
+        return h.id <= endOfYesterday.getTime();
+      });
+
+      if (yesterdayHabits.length > 0) {
+        const completedYesterday = history[yesterdayStr] || [];
+        const missedCount = yesterdayHabits.length - completedYesterday.length;
+
+        if (missedCount > 0) {
+          setAvatar(prev => {
+            const newHealth = Math.max(0, prev.health - (missedCount * 10));
+            return {
+              ...prev,
+              health: newHealth,
+              isDead: newHealth <= 0,
+              lastHealthCheck: todayDate.toDateString()
+            };
+          });
+        } else {
+          // Update check date even if no damage
+          setAvatar(prev => ({ ...prev, lastHealthCheck: todayDate.toDateString() }));
+        }
+      } else {
+        setAvatar(prev => ({ ...prev, lastHealthCheck: todayDate.toDateString() }));
+      }
+    };
+
+    if (!avatar.isDead) {
+      checkHealthDecay();
+    }
+  }, [habits, history, avatar.isDead, avatar.lastHealthCheck]); // Depend on habits/history to ensure they are loaded
+
+  const handleRevive = () => {
+    // In a real app, this might cost currency
+    setAvatar({
+      stage: 1,
+      xp: 0,
+      health: 100,
+      maxHealth: 100,
+      isDead: false,
+      lastHealthCheck: new Date().toDateString()
+    });
+    triggerHaptic('success');
+  };
+
   const toggleHabit = (id) => {
     const date = new Date();
     const currentToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -187,17 +268,27 @@ function App() {
       let xpChange = 0;
       let shouldTriggerBox = false;
 
+      // Avatar updates
+      let avatarXpChange = 0;
+      let avatarHealthChange = 0;
+
       if (isCompleted) {
         newTodayCompleted = todayCompleted.filter(hId => hId !== id);
         xpChange = -10;
+        avatarXpChange = -10; // Revert XP
         triggerHaptic('light');
       } else {
         newTodayCompleted = [...todayCompleted, id];
         xpChange = 10;
+        avatarXpChange = 10;
         triggerHaptic('success');
 
         // Check for Perfect Day (all habits completed)
         if (habits.length > 0 && newTodayCompleted.length === habits.length) {
+          xpChange += 50; // Bonus
+          avatarXpChange += 50;
+          avatarHealthChange = 10; // Heal
+
           // Check if box already claimed today
           const lastBoxDate = prev.lastMysteryBoxDate;
           if (lastBoxDate !== currentToday) {
@@ -214,6 +305,26 @@ function App() {
       }
 
       setXp(prevXp => Math.max(0, prevXp + xpChange));
+
+      // Update Avatar
+      if (!avatar.isDead) {
+        setAvatar(prev => {
+          let newXp = Math.max(0, prev.xp + avatarXpChange);
+          let newHealth = Math.min(prev.maxHealth, prev.health + avatarHealthChange);
+          let newStage = prev.stage;
+
+          // Evolution Logic
+          if (prev.stage === 1 && newXp >= 500) newStage = 2;
+          if (prev.stage === 2 && newXp >= 1500) newStage = 3;
+
+          return {
+            ...prev,
+            xp: newXp,
+            health: newHealth,
+            stage: newStage
+          };
+        });
+      }
 
       if (shouldTriggerBox) {
         setTimeout(() => setShowMysteryBox(true), 500);
@@ -302,14 +413,16 @@ function App() {
 
       <div className="glass-panel main-panel">
 
+        <AvatarWidget avatar={avatar} onRevive={handleRevive} />
+
         <div className="rpg-stats">
           <div className="level-badge">
             <span className="level-label">LVL</span>
             <span className="level-number">{level}</span>
           </div>
           <div className="xp-bar-container">
-            <div className="xp-bar" style={{ width: `${xpProgress}%` }}></div>
-            <span className="xp-text">{xpProgress} / 100 XP</span>
+            <div className="xp-bar" style={{ width: `${xpProgress / 5}%` }}></div>
+            <span className="xp-text">{xpProgress} / 500 XP</span>
           </div>
         </div>
 
