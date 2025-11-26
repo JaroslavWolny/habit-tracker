@@ -1,5 +1,5 @@
 /* Share Card Styles - Instagram Story Format (9:16) */
-.share-card-container {
+.share-card-container-v2 {
     width: 1080px;
     height: 1920px;
     background: #000000;
@@ -14,7 +14,7 @@
 }
 
 /* Background Grid Pattern */
-.share-card-container::before {
+.share-card-container-v2::before {
     content: "";
     position: absolute;
     top: 0;

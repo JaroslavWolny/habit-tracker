@@ -28,7 +28,7 @@ const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
     };
 
     return (
-        <div ref={ref} className="share-card-container">
+        <div ref={ref} className="share-card-container-v2">
             <div className="share-card-content">
                 <div className="share-header">
                     <div className="share-logo">

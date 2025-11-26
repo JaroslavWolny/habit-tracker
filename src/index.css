@@ -769,6 +769,33 @@ body {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
+.add-habit-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-bottom: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.glass-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.875rem;
+  font-size: 1rem;
+  color: white;
+  font-family: var(--font-main);
+  min-width: 0;
+  /* Critical for flex child shrinking */
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
