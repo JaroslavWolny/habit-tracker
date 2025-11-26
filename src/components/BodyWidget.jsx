@@ -12,70 +12,134 @@ const BodyWidget = ({ stats }) => {
         <div className="body-widget-container">
             <div className="body-silhouette-wrapper">
                 <svg viewBox="0 0 200 400" className="body-svg">
-                    {/* Aura / Shield (Recovery) */}
+                    <defs>
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="4" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                        <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="transparent" />
+                            <stop offset="50%" stopColor="var(--primary)" stopOpacity="0.5" />
+                            <stop offset="100%" stopColor="transparent" />
+                        </linearGradient>
+                    </defs>
+
+                    {/* Scanner Effect */}
+                    <motion.rect
+                        x="0" y="0" width="200" height="10"
+                        fill="url(#scan-gradient)"
+                        initial={{ y: 0, opacity: 0 }}
+                        animate={{ y: [0, 400, 0], opacity: [0, 0.5, 0] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                    />
+
+                    {/* Base Skeleton / Frame */}
+                    <path
+                        d="M100,40 L100,160 M100,160 L60,220 M100,160 L140,220 M60,220 L60,360 M140,220 L140,360 M40,80 L160,80 M40,80 L30,180 M160,80 L170,180"
+                        stroke="#222"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeLinecap="round"
+                    />
+
+                    {/* Head (Knowledge) */}
                     <motion.path
-                        d="M100,10 C150,10 190,50 190,200 C190,350 150,390 100,390 C50,390 10,350 10,200 C10,50 50,10 100,10 Z"
+                        d="M85,30 L115,30 L120,50 L110,70 L90,70 L80,50 Z"
+                        fill={stats.know > 0 ? "var(--primary)" : "#1a1a1a"}
+                        stroke="var(--primary)"
+                        strokeWidth="2"
+                        initial={{ opacity: 0.5 }}
+                        animate={{
+                            opacity: stats.know > 0 ? 1 : 0.5,
+                            filter: stats.know > 0 ? "url(#glow)" : "none"
+                        }}
+                    />
+
+                    {/* Chest/Core (Nutrition) */}
+                    <motion.path
+                        d="M70,80 L130,80 L120,150 L80,150 Z"
+                        fill={stats.nutrition > 0 ? "var(--primary)" : "#1a1a1a"}
+                        stroke="var(--primary)"
+                        strokeWidth="2"
+                        animate={{
+                            fillOpacity: 0.2 + (stats.nutrition * 0.8),
+                            filter: stats.nutrition > 0.8 ? "url(#glow)" : "none"
+                        }}
+                    />
+
+                    {/* Abs (Nutrition Detail) */}
+                    <path d="M90,150 L110,150 L105,180 L95,180 Z"
+                        fill={stats.nutrition > 0.5 ? "var(--primary)" : "#111"}
+                        stroke="var(--primary)" strokeWidth="1" opacity="0.8" />
+
+                    {/* Shoulders (Training) */}
+                    <motion.circle cx="40" cy="80" r="12" fill={stats.training > 0 ? "var(--primary)" : "#1a1a1a"} stroke="var(--primary)" strokeWidth="2" />
+                    <motion.circle cx="160" cy="80" r="12" fill={stats.training > 0 ? "var(--primary)" : "#1a1a1a"} stroke="var(--primary)" strokeWidth="2" />
+
+                    {/* Arms (Training) */}
+                    <motion.path
+                        d="M35,95 L25,160 L45,160 L55,95 Z"
+                        fill={stats.training > 0 ? "var(--primary)" : "#1a1a1a"}
+                        stroke="var(--primary)"
+                        strokeWidth="2"
+                        animate={{ opacity: 0.3 + (stats.training * 0.7) }}
+                    />
+                    <motion.path
+                        d="M165,95 L175,160 L155,160 L145,95 Z"
+                        fill={stats.training > 0 ? "var(--primary)" : "#1a1a1a"}
+                        stroke="var(--primary)"
+                        strokeWidth="2"
+                        animate={{ opacity: 0.3 + (stats.training * 0.7) }}
+                    />
+
+                    {/* Legs (Training/Recovery) */}
+                    <motion.path
+                        d="M65,220 L55,360 L85,360 L95,220 Z"
+                        fill={stats.training > 0 ? "var(--primary)" : "#1a1a1a"}
+                        stroke="var(--primary)"
+                        strokeWidth="2"
+                        animate={{ opacity: 0.3 + (stats.training * 0.7) }}
+                    />
+                    <motion.path
+                        d="M135,220 L145,360 L115,360 L105,220 Z"
+                        fill={stats.training > 0 ? "var(--primary)" : "#1a1a1a"}
+                        stroke="var(--primary)"
+                        strokeWidth="2"
+                        animate={{ opacity: 0.3 + (stats.training * 0.7) }}
+                    />
+
+                    {/* Energy Field (Recovery) */}
+                    <motion.ellipse
+                        cx="100" cy="200" rx="90" ry="180"
                         fill="none"
                         stroke="var(--primary)"
                         strokeWidth="2"
+                        strokeDasharray="10 20"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{
-                            opacity: auraOpacity > 0 ? 0.3 + (auraOpacity * 0.5) : 0,
-                            scale: auraOpacity > 0 ? [1, 1.05, 1] : 1
+                            opacity: stats.recovery > 0 ? 0.4 : 0.1,
+                            scale: stats.recovery > 0 ? [1, 1.02, 1] : 1,
+                            rotate: 360
                         }}
-                        transition={{ duration: 3, repeat: Infinity }}
-                        style={{ filter: 'blur(8px)' }}
+                        transition={{
+                            rotate: { duration: 20, repeat: Infinity, ease: "linear" },
+                            scale: { duration: 2, repeat: Infinity }
+                        }}
                     />
-
-                    {/* Base Body Outline */}
-                    <path
-                        d="M100,30 C115,30 125,40 125,55 C125,65 120,75 110,80 L135,110 L160,100 L170,140 L140,150 L140,220 L160,380 L130,380 L115,250 L100,250 L85,250 L70,380 L40,380 L60,220 L60,150 L30,140 L40,100 L65,110 L90,80 C80,75 75,65 75,55 C75,40 85,30 100,30 Z"
-                        fill="#111"
-                        stroke="#333"
-                        strokeWidth="2"
-                    />
-
-                    {/* Muscles (Training) - Arms, Legs, Chest */}
-                    <motion.path
-                        d="M65,110 L40,100 L30,140 L60,150 Z M135,110 L160,100 L170,140 L140,150 Z M70,380 L40,380 L60,220 L85,250 Z M130,380 L160,380 L140,220 L115,250 Z M60,150 L140,150 L115,250 L85,250 Z"
-                        fill="var(--primary)"
-                        initial={{ opacity: 0.1 }}
-                        animate={{ opacity: muscleOpacity }}
-                        transition={{ duration: 1 }}
-                    />
-
-                    {/* Core (Nutrition) - Stomach/Torso Center */}
-                    <motion.circle
-                        cx="100" cy="180" r="20"
-                        fill="var(--primary)"
-                        initial={{ opacity: 0.1 }}
-                        animate={{ opacity: coreOpacity }}
-                        transition={{ duration: 1 }}
-                        style={{ filter: 'blur(10px)' }}
-                    />
-
-                    {/* Brain/Head (Knowledge - Optional addition for completeness) */}
-                    <motion.circle
-                        cx="100" cy="55" r="15"
-                        fill="var(--primary)"
-                        initial={{ opacity: 0.1 }}
-                        animate={{ opacity: 0.2 }} // Static for now or link to knowledge
-                    />
-
                 </svg>
             </div>
 
             <div className="body-status-labels">
                 <div className="status-label">
-                    <span className="label-dot" style={{ background: stats.training > 0 ? 'var(--primary)' : '#333' }}></span>
-                    MUSCLES
+                    <span className="label-dot" style={{ background: stats.training > 0 ? 'var(--primary)' : '#333', boxShadow: stats.training > 0 ? '0 0 10px var(--primary)' : 'none' }}></span>
+                    SYSTEM
                 </div>
                 <div className="status-label">
-                    <span className="label-dot" style={{ background: stats.nutrition > 0 ? 'var(--primary)' : '#333' }}></span>
+                    <span className="label-dot" style={{ background: stats.nutrition > 0 ? 'var(--primary)' : '#333', boxShadow: stats.nutrition > 0 ? '0 0 10px var(--primary)' : 'none' }}></span>
                     FUEL
                 </div>
                 <div className="status-label">
-                    <span className="label-dot" style={{ background: stats.recovery > 0 ? 'var(--primary)' : '#333' }}></span>
+                    <span className="label-dot" style={{ background: stats.recovery > 0 ? 'var(--primary)' : '#333', boxShadow: stats.recovery > 0 ? '0 0 10px var(--primary)' : 'none' }}></span>
                     ENERGY
                 </div>
             </div>

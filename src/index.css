@@ -74,22 +74,181 @@ body,
 /* ... existing styles ... */
 
 /* Share Button */
-.share-btn {
+/* Share Button - Fixed Bottom */
+.fixed-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
   width: 100%;
   padding: 1rem;
-  margin-top: auto;
-  border-radius: 20px;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 80%, transparent 100%);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  /* Let clicks pass through gradient area */
+}
+
+.share-btn-large {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 600px;
+  padding: 1.25rem;
+  border-radius: 24px;
   background: var(--primary);
   color: black;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  box-shadow: 0 8px 25px rgba(57, 255, 20, 0.3);
-  min-height: 52px;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);
+  min-height: 64px;
   text-transform: uppercase;
   border: none;
   cursor: pointer;
-  /* Ensure button respects safe areas if fixed, though here it is in flow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.share-btn-large:active {
+  transform: scale(0.98);
+  box-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+}
+
+.btn-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -100%;
+  }
+
+  20% {
+    left: 200%;
+  }
+
+  100% {
+    left: 200%;
+  }
+}
+
+.camera-icon {
+  font-size: 1.5rem;
+}
+
+/* App Header */
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem;
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo-container {
+  width: 48px;
+  height: 48px;
+  background: rgba(57, 255, 20, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(57, 255, 20, 0.3);
+}
+
+.app-logo-svg {
+  width: 32px;
+  height: 32px;
+  filter: drop-shadow(0 0 5px var(--primary));
+}
+
+.header-row h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin: 0;
+  background: linear-gradient(to right, #fff, #ccc);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-style: italic;
+}
+
+/* Streak Display V2 */
+.streak-display-v2 {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 100px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.streak-fire-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.streak-fire {
+  font-size: 1.5rem;
+  z-index: 2;
+  filter: drop-shadow(0 0 10px orange);
+}
+
+.streak-glow {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: orange;
+  filter: blur(15px);
+  opacity: 0.5;
+  z-index: 1;
+  animation: pulse 2s infinite;
+}
+
+.streak-meta {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.streak-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: white;
+}
+
+.streak-lbl {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* Adjust main panel to not be hidden by fixed button */
+.main-panel {
+  padding-bottom: 100px !important;
 }
 
 /* Side Panel - Hide on mobile by default */

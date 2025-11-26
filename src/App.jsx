@@ -263,9 +263,23 @@ function App() {
       <Award show={isAllDone} />
 
       <div className="header-row">
-        <h1>OPTIMAL BODY</h1>
-        <div className="streak-display">
-          🔥 {streak}%
+        <div className="app-brand">
+          <div className="logo-container">
+            <svg viewBox="0 0 100 100" className="app-logo-svg">
+              <path d="M20,20 L80,20 L80,80 L50,80 L50,50 L20,50 Z" fill="none" stroke="var(--primary)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h1>OPTIMAL APP</h1>
+        </div>
+        <div className="streak-display-v2">
+          <div className="streak-fire-wrapper">
+            <span className="streak-fire">🔥</span>
+            <div className="streak-glow"></div>
+          </div>
+          <div className="streak-meta">
+            <span className="streak-val">{streak}</span>
+            <span className="streak-lbl">DAYS</span>
+          </div>
         </div>
       </div>
 
@@ -282,11 +296,15 @@ function App() {
           onDelete={deleteHabit}
         />
 
-        <button className="glass-button share-btn" onClick={handleShare}>
-          PROOF OF WORK 📸
-        </button>
-
         <Calendar history={history} habits={habits} />
+      </div>
+
+      <div className="fixed-action-bar">
+        <button className="glass-button share-btn-large" onClick={handleShare}>
+          <span className="camera-icon">📸</span>
+          <span className="action-text">PROOF OF WORK</span>
+          <div className="btn-shine"></div>
+        </button>
       </div>
 
       <div style={{ position: 'absolute', left: '-9999px', top: 0 }}>

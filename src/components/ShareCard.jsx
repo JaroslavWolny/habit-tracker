@@ -39,7 +39,7 @@ const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
                 <div className="share-header">
                     <div className="share-logo">
                         <span className="logo-icon">⚡</span>
-                        <span>OPTIMAL JARO</span>
+                        <span>OPTIMAL APP</span>
                     </div>
                     <div className="share-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()}</div>
                 </div>
@@ -112,7 +112,7 @@ const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
 
                 <div className="share-footer">
                     <div className="footer-line"></div>
-                    <p>JOIN THE 1% CLUB @OPTIMALJARO</p>
+                    <p>JOIN THE 1% CLUB @OPTIMALAPP</p>
                 </div>
             </div>
         </div>
