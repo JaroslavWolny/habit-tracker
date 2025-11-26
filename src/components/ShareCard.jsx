@@ -9,7 +9,7 @@ const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
     // Map categories to icons/labels/colors
     const categoryConfig = {
         training: { label: 'TRAINING', icon: '🏋️', color: '#39FF14' },
-        nutrition: { label: 'SUPPLEMENTS', icon: '🥑', color: '#FF39D1' },
+        nutrition: { label: 'SUPPLEMENTS', icon: '💊', color: '#FF39D1' },
         recovery: { label: 'RECOVERY', icon: '💤', color: '#39D1FF' },
         knowledge: { label: 'KNOWLEDGE', icon: '🧠', color: '#FFD139' },
         default: { label: 'GENERAL', icon: '⚡', color: '#FFFFFF' }

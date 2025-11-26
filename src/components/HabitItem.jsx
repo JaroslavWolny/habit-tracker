@@ -11,7 +11,7 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
   // Category Configuration (Same as AddHabit)
   const categoryConfig = {
     training: { label: 'Training', icon: '🏋️', color: '#39FF14' },
-    nutrition: { label: 'Supplements', icon: '🥑', color: '#FF39D1' },
+    nutrition: { label: 'Supplements', icon: '💊', color: '#FF39D1' },
     recovery: { label: 'Recovery', icon: '💤', color: '#39D1FF' },
     knowledge: { label: 'Knowledge', icon: '🧠', color: '#FFD139' },
     default: { label: 'General', icon: '⚡', color: '#FFFFFF' }

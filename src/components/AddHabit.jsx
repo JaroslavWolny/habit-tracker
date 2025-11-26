@@ -8,7 +8,7 @@ const AddHabit = ({ onAdd }) => {
 
     const categories = [
         { id: 'training', label: 'Training', icon: '🏋️', color: '#39FF14' },
-        { id: 'nutrition', label: 'Supplements', icon: '🥑', color: '#FF39D1' },
+        { id: 'nutrition', label: 'Supplements', icon: '💊', color: '#FF39D1' },
         { id: 'recovery', label: 'Recovery', icon: '💤', color: '#39D1FF' },
         { id: 'knowledge', label: 'Knowledge', icon: '🧠', color: '#FFD139' }
     ];
