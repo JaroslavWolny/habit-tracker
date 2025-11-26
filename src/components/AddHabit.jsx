@@ -38,7 +38,6 @@ const AddHabit = ({ onAdd }) => {
             <input
                 type="text"
                 className="glass-input"
-                placeholder="Initialize protocol..."
                 value={text}
                 onChange={(e) => setText(e.target.value)}
             />
