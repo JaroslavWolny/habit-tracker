@@ -6,6 +6,7 @@ import AddHabit from './components/AddHabit';
 import Calendar from './components/Calendar';
 import Award from './components/Award';
 import ShareCard from './components/ShareCard';
+import LevelUpModal from './components/LevelUpModal';
 
 function App() {
   const [habits, setHabits] = useState(() => {
@@ -44,12 +45,28 @@ function App() {
 
   const today = getTodayStr();
 
-  const calculateLevel = () => {
-    return Math.floor(xp / 100) + 1;
+  const calculateLevel = (currentXp) => {
+    return Math.floor(currentXp / 500) + 1;
   };
 
-  const level = calculateLevel();
-  const xpProgress = xp % 100;
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const previousLevel = useRef(calculateLevel(xp));
+
+  useEffect(() => {
+    const currentLevel = calculateLevel(xp);
+    if (currentLevel > previousLevel.current) {
+      setShowLevelUp(true);
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.6 }
+      });
+    }
+    previousLevel.current = currentLevel;
+  }, [xp]);
+
+  const level = calculateLevel(xp);
+  const xpProgress = xp % 500;
 
   const calculateStreak = () => {
     let streak = 0;
@@ -63,20 +80,15 @@ function App() {
       const completedIds = history[dateStr] || [];
 
       // Filter habits that existed on this date
-      // We assume habit.id is a timestamp of creation for new habits
       const endOfDay = new Date(d);
       endOfDay.setHours(23, 59, 59, 999);
 
       const relevantHabits = habits.filter(h => {
-        // For today (i=0), consider all active habits to avoid issues with clock skew
         if (i === 0) return true;
-
-        // If id is not a number (legacy data), assume it existed
         if (typeof h.id !== 'number') return true;
         return h.id <= endOfDay.getTime();
       });
 
-      // If no habits existed that day, it doesn't count towards streak
       if (relevantHabits.length === 0) {
         if (i === 0) continue;
         break;
@@ -95,11 +107,38 @@ function App() {
     return streak;
   };
 
+  const calculateHabitStreak = (habitId) => {
+    let streak = 0;
+    const todayDate = new Date();
+
+    for (let i = 0; i < 365; i++) {
+      const d = new Date();
+      d.setDate(todayDate.getDate() - i);
+      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      // Check if habit existed
+      const endOfDay = new Date(d);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (typeof habitId === 'number' && habitId > endOfDay.getTime()) {
+        break; // Habit didn't exist yet
+      }
+
+      const isCompleted = (history[dateStr] || []).includes(habitId);
+
+      if (isCompleted) {
+        streak++;
+      } else {
+        if (i === 0) continue;
+        break;
+      }
+    }
+    return streak;
+  };
+
   const streak = calculateStreak();
 
   const triggerHaptic = (type = 'light') => {
     if (navigator.vibrate) {
-      // Simple vibration patterns
       const patterns = {
         light: 10,
         medium: 20,
@@ -133,22 +172,29 @@ function App() {
       const isCompleted = todayCompleted.includes(id);
 
       let newTodayCompleted;
+      let xpChange = 0;
+
       if (isCompleted) {
         newTodayCompleted = todayCompleted.filter(hId => hId !== id);
-        setXp(prevXp => Math.max(0, prevXp - 10));
+        xpChange = -10;
         triggerHaptic('light');
       } else {
         newTodayCompleted = [...todayCompleted, id];
-        setXp(prevXp => prevXp + 10);
+        xpChange = 10;
         triggerHaptic('success');
 
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#d946ef', '#8b5cf6', '#06b6d4', '#10b981']
-        });
+        // Check for Perfect Day (all habits completed)
+        if (habits.length > 0 && newTodayCompleted.length === habits.length) {
+          xpChange += 50; // Bonus
+          confetti({
+            particleCount: 150,
+            spread: 60,
+            origin: { y: 0.7 }
+          });
+        }
       }
+
+      setXp(prevXp => Math.max(0, prevXp + xpChange));
 
       return {
         ...prev,
@@ -174,7 +220,8 @@ function App() {
 
   const todayHabits = habits.map(h => ({
     ...h,
-    completed: (history[today] || []).includes(h.id)
+    completed: (history[today] || []).includes(h.id),
+    streak: calculateHabitStreak(h.id)
   }));
 
   const completedCount = (history[today] || []).filter(id => habits.some(h => h.id === id)).length;
@@ -227,6 +274,12 @@ function App() {
           todayHabits={todayHabits}
         />
       </div>
+
+      <LevelUpModal
+        show={showLevelUp}
+        level={level}
+        onClose={() => setShowLevelUp(false)}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
+
 import { Edit2, Trash2, Save, X, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -24,21 +24,8 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
     }
   };
 
-  const handleToggle = (e) => {
+  const handleToggle = () => {
     if (!isEditing) {
-      if (!habit.completed) {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = (rect.left + rect.width / 2) / window.innerWidth;
-        const y = (rect.top + rect.height / 2) / window.innerHeight;
-
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { x, y },
-          colors: ['#d946ef', '#8b5cf6', '#06b6d4', '#10b981'],
-          disableForReducedMotion: true
-        });
-      }
       onToggle(habit.id);
     }
   };
@@ -51,9 +38,14 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
       className={`habit-item ${habit.completed ? 'completed' : ''}`}
     >
       <div className="habit-main" onClick={handleToggle}>
-        <div className={`habit-checkbox ${habit.completed ? 'checked' : ''}`}>
+        <motion.div
+          className={`habit-checkbox ${habit.completed ? 'checked' : ''}`}
+          whileTap={{ scale: 0.8 }}
+          animate={{ scale: habit.completed ? [1, 1.2, 1] : 1 }}
+          transition={{ duration: 0.3 }}
+        >
           {habit.completed && <Check size={18} strokeWidth={4} color="white" />}
-        </div>
+        </motion.div>
 
         {isEditing ? (
           <input
@@ -65,7 +57,14 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
             autoFocus
           />
         ) : (
-          <span className="habit-text">{habit.text}</span>
+          <div className="habit-info">
+            <span className="habit-text">{habit.text}</span>
+            {habit.streak > 0 && (
+              <span className="habit-streak-badge">
+                🔥 {habit.streak}
+              </span>
+            )}
+          </div>
         )}
 
         <div className="habit-actions" onClick={(e) => e.stopPropagation()}>
