@@ -1,225 +1,175 @@
-/* Share Card Styles */
+/* Share Card Styles - Instagram Story Format (9:16) */
 .share-card-container {
     width: 1080px;
-    /* Instagram Story width */
     height: 1920px;
-    /* Instagram Story height */
-    background: #050505;
+    background: #000000;
     position: relative;
     overflow: hidden;
     font-family: 'Outfit', sans-serif;
     color: white;
     display: flex;
     flex-direction: column;
+    padding: 120px 80px;
+    box-sizing: border-box;
 }
 
-.share-card-bg {
+/* Background Grid Pattern */
+.share-card-container::before {
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-image:
-        radial-gradient(circle at 0% 0%, rgba(217, 70, 239, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.3) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.15) 0%, transparent 50%);
+        linear-gradient(rgba(57, 255, 20, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(57, 255, 20, 0.05) 1px, transparent 1px);
+    background-size: 80px 80px;
     z-index: 0;
+    pointer-events: none;
 }
 
-.share-content {
+.share-card-content {
     position: relative;
     z-index: 1;
-    padding: 120px 80px;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    gap: 60px;
+    justify-content: space-between;
 }
 
 .share-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 2px solid #39FF14;
+    padding-bottom: 40px;
 }
 
-.brand-pill {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    padding: 16px 32px;
-    border-radius: 100px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    font-size: 28px;
-    font-weight: 600;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.date-badge {
-    font-size: 28px;
-    color: rgba(255, 255, 255, 0.6);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-.main-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-}
-
-.stat-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 48px;
-    padding: 48px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 320px;
-}
-
-.stat-label {
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.5);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-}
-
-.stat-value-large {
-    font-size: 96px;
-    font-weight: 800;
+.share-logo {
     display: flex;
     align-items: center;
     gap: 20px;
-}
-
-.fire-icon {
-    font-size: 80px;
-}
-
-.stat-sub {
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.4);
-}
-
-.rank-value {
-    font-size: 64px;
+    font-size: 48px;
     font-weight: 800;
-    background: linear-gradient(135deg, #fff, var(--rank-color));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    letter-spacing: 2px;
 }
 
-.rank-progress {
-    width: 100%;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 100px;
-    overflow: hidden;
-    margin-top: auto;
+.logo-icon {
+    color: #39FF14;
 }
 
-.rank-bar {
-    height: 100%;
-    border-radius: 100px;
-}
-
-.habits-preview-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 48px;
-    padding: 60px;
-    flex: 1;
-}
-
-.habits-preview-card h3 {
+.share-date {
     font-size: 32px;
-    margin-bottom: 40px;
-    color: rgba(255, 255, 255, 0.9);
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 2px;
 }
 
-.preview-list {
+.share-main-stat {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 24px;
-}
-
-.preview-item {
-    display: flex;
     align-items: center;
-    gap: 24px;
-    padding: 24px;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    justify-content: center;
+    gap: 80px;
 }
 
-.preview-item.done {
-    background: rgba(16, 185, 129, 0.05);
-    border-color: rgba(16, 185, 129, 0.2);
-}
-
-.preview-checkbox {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.2);
+.stat-circle {
+    width: 600px;
+    height: 600px;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.preview-item.done .preview-checkbox {
-    background: #10b981;
-    border-color: #10b981;
+.progress-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
 }
 
-.check-mark {
-    font-size: 28px;
-    color: black;
-    font-weight: bold;
-}
-
-.preview-text {
-    font-size: 32px;
-    font-weight: 500;
-}
-
-.preview-item.done .preview-text {
-    opacity: 0.5;
-    text-decoration: line-through;
-}
-
-.more-habits {
+.stat-inner {
+    position: absolute;
     text-align: center;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 24px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 160px;
+    font-weight: 900;
+    line-height: 1;
+    color: white;
+    text-shadow: 0 0 40px rgba(57, 255, 20, 0.3);
+}
+
+.stat-label {
+    display: block;
+    font-size: 40px;
+    font-weight: 700;
+    color: #39FF14;
+    letter-spacing: 8px;
     margin-top: 20px;
 }
 
-.share-footer {
-    margin-top: auto;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 32px;
+.streak-badge {
+    font-size: 48px;
+    font-weight: 800;
+    background: rgba(57, 255, 20, 0.1);
+    border: 2px solid #39FF14;
+    padding: 20px 60px;
+    border-radius: 100px;
+    color: #39FF14;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-shadow: 0 0 40px rgba(57, 255, 20, 0.2);
 }
 
-.footer-line {
-    width: 60px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 100px;
+.share-pillars {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    margin-bottom: 100px;
+}
+
+.pillar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pillar-label {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    color: #888;
+}
+
+.pillar-track {
+    height: 24px;
+    background: #1a1a1a;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #333;
+}
+
+.pillar-fill {
+    height: 100%;
+    background: #39FF14;
+    box-shadow: 0 0 20px #39FF14;
+}
+
+.share-footer {
+    text-align: center;
+    border-top: 2px solid #333;
+    padding-top: 40px;
 }
 
 .share-footer p {
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.4);
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    font-size: 32px;
+    color: #888;
+    font-weight: 600;
+    letter-spacing: 4px;
+    margin: 0;
 }

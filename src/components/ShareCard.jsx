@@ -3,88 +3,88 @@ import './ShareCard.css';
 
 const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
     const completedCount = todayHabits.filter(h => h.completed).length;
-    const totalCount = habits.length;
+    const totalCount = todayHabits.length;
     const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-    // Determine Rank
-    let rank = "Novice";
-    let rankColor = "#a1a1aa";
-    if (streak >= 3) { rank = "Apprentice"; rankColor = "#06b6d4"; }
-    if (streak >= 7) { rank = "Warrior"; rankColor = "#8b5cf6"; }
-    if (streak >= 14) { rank = "Master"; rankColor = "#d946ef"; }
-    if (streak >= 30) { rank = "Legend"; rankColor = "#f59e0b"; }
+    // Calculate stats for the graph
+    const categories = {
+        training: { total: 0, done: 0 },
+        nutrition: { total: 0, done: 0 },
+        recovery: { total: 0, done: 0 }
+    };
 
-    const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    todayHabits.forEach(h => {
+        const cat = h.category || 'training';
+        if (categories[cat]) {
+            categories[cat].total++;
+            if (h.completed) categories[cat].done++;
+        }
+    });
+
+    const getPercent = (cat) => {
+        return categories[cat].total > 0
+            ? (categories[cat].done / categories[cat].total) * 100
+            : 0;
+    };
 
     return (
-        <div ref={ref} className="share-card-container" style={{
-            width: '1080px',
-            height: '1920px',
-            background: '#050505',
-            position: 'relative',
-            overflow: 'hidden',
-            fontFamily: "'Outfit', sans-serif",
-            color: 'white',
-            display: 'flex',
-            flexDirection: 'column'
-        }}>
-            <div className="share-card-bg"></div>
-            <div className="share-content">
+        <div ref={ref} className="share-card-container">
+            <div className="share-card-content">
                 <div className="share-header">
-                    <div className="brand-pill">
-                        <span className="brand-icon">✨</span>
-                        <span>Habit Tracker</span>
+                    <div className="share-logo">
+                        <span className="logo-icon">⚡</span>
+                        <span>OPTIMAL JARO</span>
                     </div>
-                    <div className="date-badge">{todayStr}</div>
+                    <div className="share-date">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase()}</div>
                 </div>
 
-                <div className="main-stats-grid">
-                    <div className="stat-card streak-card">
-                        <span className="stat-label">Current Streak</span>
-                        <div className="stat-value-large">
-                            <span className="fire-icon">🔥</span>
-                            {streak}
+                <div className="share-main-stat">
+                    <div className="stat-circle">
+                        <svg viewBox="0 0 100 100" className="progress-ring">
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="#1a1a1a" strokeWidth="8" />
+                            <circle
+                                cx="50" cy="50" r="45"
+                                fill="none"
+                                stroke="#39FF14"
+                                strokeWidth="8"
+                                strokeDasharray={`${percentage * 2.83} 283`}
+                                strokeLinecap="round"
+                                transform="rotate(-90 50 50)"
+                            />
+                        </svg>
+                        <div className="stat-inner">
+                            <span className="stat-value">{percentage}%</span>
+                            <span className="stat-label">OPTIMAL</span>
                         </div>
-                        <div className="stat-sub">Days on fire</div>
                     </div>
-
-                    <div className="stat-card rank-card" style={{ '--rank-color': rankColor }}>
-                        <span className="stat-label">Daily Rank</span>
-                        <div className="rank-value" style={{
-                            fontSize: '64px',
-                            fontWeight: '800',
-                            color: rankColor,
-                            textShadow: '0 0 20px rgba(255, 255, 255, 0.2)',
-                            background: 'none',
-                            webkitBackgroundClip: 'border-box',
-                            backgroundClip: 'border-box'
-                        }}>{rank}</div>
-                        <div className="rank-progress">
-                            <div className="rank-bar" style={{ width: `${percentage}%`, background: rankColor }}></div>
-                        </div>
+                    <div className="streak-badge">
+                        🔥 {streak} DAY STREAK
                     </div>
                 </div>
 
-                <div className="habits-preview-card">
-                    <h3>Today's Focus</h3>
-                    <div className="preview-list">
-                        {todayHabits.slice(0, 5).map((habit, index) => (
-                            <div key={index} className={`preview-item ${habit.completed ? 'done' : ''}`}>
-                                <div className="preview-checkbox">
-                                    {habit.completed && <span className="check-mark">✓</span>}
-                                </div>
-                                <span className="preview-text">{habit.text}</span>
-                            </div>
-                        ))}
-                        {todayHabits.length > 5 && (
-                            <div className="more-habits">+{todayHabits.length - 5} more</div>
-                        )}
+                <div className="share-pillars">
+                    <div className="pillar-row">
+                        <span className="pillar-label">TRAINING</span>
+                        <div className="pillar-track">
+                            <div className="pillar-fill" style={{ width: `${getPercent('training')}%` }}></div>
+                        </div>
+                    </div>
+                    <div className="pillar-row">
+                        <span className="pillar-label">NUTRITION</span>
+                        <div className="pillar-track">
+                            <div className="pillar-fill" style={{ width: `${getPercent('nutrition')}%` }}></div>
+                        </div>
+                    </div>
+                    <div className="pillar-row">
+                        <span className="pillar-label">RECOVERY</span>
+                        <div className="pillar-track">
+                            <div className="pillar-fill" style={{ width: `${getPercent('recovery')}%` }}></div>
+                        </div>
                     </div>
                 </div>
 
                 <div className="share-footer">
-                    <div className="footer-line"></div>
-                    <p>Building better habits, one day at a time.</p>
+                    <p>OPTIMIZED VIA @OPTIMALJARO</p>
                 </div>
             </div>
         </div>
