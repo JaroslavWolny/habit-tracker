@@ -15,6 +15,12 @@
   --text-secondary: #888888;
   --font-main: 'Outfit', sans-serif;
   --hud-border: 1px solid rgba(57, 255, 20, 0.3);
+
+  /* Safe Areas */
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+  --safe-left: env(safe-area-inset-left);
+  --safe-right: env(safe-area-inset-right);
 }
 
 * {
@@ -37,18 +43,17 @@ body {
 }
 
 html,
-body {
+body,
+#root {
   width: 100%;
   max-width: 100vw;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  min-height: 100vh;
 }
 
 #root {
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
@@ -56,7 +61,10 @@ body {
 .app-container {
   width: 100%;
   margin: 0 auto;
-  padding: max(env(safe-area-inset-top), 1.5rem) 1rem env(safe-area-inset-bottom, 1rem) 1rem;
+  padding-top: max(var(--safe-top), 1.5rem);
+  padding-bottom: max(var(--safe-bottom), 1rem);
+  padding-left: max(var(--safe-left), 1rem);
+  padding-right: max(var(--safe-right), 1rem);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
@@ -81,6 +89,7 @@ body {
   text-transform: uppercase;
   border: none;
   cursor: pointer;
+  /* Ensure button respects safe areas if fixed, though here it is in flow */
 }
 
 /* Side Panel - Hide on mobile by default */
