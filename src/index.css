@@ -598,91 +598,242 @@ body,
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
-.rank-progress {
-  width: 100%;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 100px;
-  overflow: hidden;
-  margin-top: auto;
-}
-
-.rank-bar {
-  height: 100%;
-  border-radius: 100px;
-}
-
-.habits-preview-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 48px;
-  padding: 60px;
-  flex: 1;
-}
-
-.habits-preview-card h3 {
-  font-size: 32px;
-  margin-bottom: 40px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.preview-list {
+/* Add Habit Input */
+.add-habit-form {
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.preview-item {
-  display: flex;
+  gap: 0.5rem;
   align-items: center;
-  gap: 24px;
-  padding: 24px;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.75rem;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(57, 255, 20, 0.2);
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(57, 255, 20, 0.05);
+  transition: all 0.3s ease;
 }
 
-.preview-item.done {
-  background: rgba(16, 185, 129, 0.05);
-  border-color: rgba(16, 185, 129, 0.2);
+.add-habit-form:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 30px rgba(57, 255, 20, 0.15);
 }
 
-.preview-checkbox {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 3px solid rgba(255, 255, 255, 0.2);
+.glass-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  font-size: 1rem;
+  color: var(--primary);
+  font-family: 'Courier New', monospace;
+  /* Tech font */
+  font-weight: 600;
+  min-width: 0;
+  letter-spacing: 0.5px;
+}
+
+.glass-input:focus {
+  outline: none;
+}
+
+.glass-input::placeholder {
+  color: rgba(57, 255, 20, 0.3);
+  font-family: var(--font-main);
+  letter-spacing: normal;
+}
+
+.glass-button {
+  background: var(--primary);
+  color: black;
+  border: none;
+  border-radius: 16px;
+  padding: 0;
+  font-weight: 600;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.4);
 }
 
-.preview-item.done .preview-checkbox {
-  background: #10b981;
-  border-color: #10b981;
+.glass-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 5px rgba(57, 255, 20, 0.4);
 }
 
-.check-mark {
-  font-size: 28px;
-  color: black;
-  font-weight: bold;
+/* Habit List */
+.habit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.preview-text {
-  font-size: 32px;
-  font-weight: 500;
+.habit-item {
+  background: rgba(20, 20, 20, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 4px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 80px;
 }
 
-.preview-item.done .preview-text {
-  opacity: 0.5;
+.habit-item:hover {
+  transform: translateX(4px);
+  background: rgba(30, 30, 30, 0.8);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.habit-item.completed {
+  background: rgba(57, 255, 20, 0.05);
+  border-color: rgba(57, 255, 20, 0.2);
+  border-left-color: var(--primary);
+  box-shadow: inset 0 0 20px rgba(57, 255, 20, 0.05);
+}
+
+.habit-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+  cursor: pointer;
+  min-height: 48px;
+}
+
+.habit-checkbox {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  background: transparent;
+}
+
+.habit-checkbox.checked {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 15px var(--primary);
+}
+
+.habit-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.habit-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.habit-item.completed .category-icon {
+  color: var(--primary);
+  opacity: 1;
+}
+
+.habit-text {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: opacity 0.3s;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.habit-item.completed .habit-text {
+  color: var(--text-secondary);
   text-decoration: line-through;
 }
 
-.more-habits {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 24px;
-  margin-top: 20px;
+.habit-streak-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: #fbbf24;
+  font-weight: 700;
+  background: rgba(251, 191, 36, 0.1);
+  padding: 2px 8px;
+  border-radius: 100px;
+  width: fit-content;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.habit-actions {
+  display: flex;
+  gap: 0.25rem;
+  padding-right: 0.5rem;
+  opacity: 0;
+  /* Hidden by default on desktop */
+  transition: opacity 0.2s;
+}
+
+/* Show actions on hover or touch devices (media query handled elsewhere usually, but for now:) */
+.habit-item:hover .habit-actions,
+.habit-item:active .habit-actions,
+.habit-item:focus-within .habit-actions {
+  opacity: 1;
+}
+
+/* Always show on mobile to avoid confusion */
+@media (hover: none) {
+  .habit-actions {
+    opacity: 1;
+  }
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.delete-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
 }
 
 .share-footer {
