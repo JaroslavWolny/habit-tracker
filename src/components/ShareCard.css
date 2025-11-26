@@ -1,4 +1,4 @@
-/* Viral Bento Card Styles */
+/* Viral Bento Card Styles V2 - Pillars Grid */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
 
 .share-card-bento {
@@ -32,11 +32,8 @@
     display: flex;
     flex-direction: column;
     padding: 80px 60px;
-    /* Reduced padding */
     gap: 40px;
-    /* Reduced gap */
     justify-content: space-between;
-    /* Distribute space */
 }
 
 /* Header */
@@ -45,15 +42,39 @@
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    /* Prevent shrinking */
 }
 
-/* ... (keep existing styles) ... */
+.app-badge {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px 40px;
+    border-radius: 100px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.app-icon {
+    font-size: 40px;
+}
+
+.app-name {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.date-display {
+    font-size: 32px;
+    font-weight: 600;
+    opacity: 0.6;
+    letter-spacing: 2px;
+}
 
 /* Hero Streak */
 .bento-hero {
     flex: 0 0 auto;
-    /* Don't flex, take natural size */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -64,9 +85,8 @@
 
 .hero-ring-bg {
     position: absolute;
-    width: 600px;
-    /* Smaller ring */
-    height: 600px;
+    width: 550px;
+    height: 550px;
     border: 2px solid rgba(255, 255, 255, 0.05);
     border-radius: 50%;
     top: 50%;
@@ -75,56 +95,128 @@
 }
 
 .hero-value {
-    font-size: 300px;
-    /* Smaller font */
+    font-size: 280px;
     font-weight: 900;
     line-height: 0.8;
     letter-spacing: -10px;
 }
 
-/* ... */
+.hero-label {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 10px;
+    opacity: 0.5;
+    margin-top: 20px;
+}
+
+/* Pillars Grid Section */
+.pillars-grid-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section-label {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    opacity: 0.4;
+    text-transform: uppercase;
+}
+
+.pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
+    height: 100%;
+}
+
+.pillar-card {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 32px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+}
+
+.pillar-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.pillar-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 1;
+}
+
+.pillar-name {
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.pillar-stat {
+    font-size: 20px;
+    font-weight: 600;
+    opacity: 0.6;
+}
+
+.pillar-check {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    font-size: 40px;
+    font-weight: 900;
+}
+
+.pillar-progress-bg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.pillar-progress-fill {
+    height: 100%;
+    transition: width 0.5s ease;
+}
 
 /* Heatmap */
 .heatmap-section {
-    height: 200px;
-    /* Fixed height */
+    height: 220px;
     flex-shrink: 0;
-    padding: 30px;
-    /* Reduced padding */
-}
-
-/* Habits List */
-.habits-section-bento {
-    flex: 1;
-    min-height: 0;
-    /* Allow shrinking */
     background: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 40px;
-    padding: 40px;
+    padding: 30px;
     display: flex;
     flex-direction: column;
     gap: 20px;
-    overflow: hidden;
-    /* Hide overflow if too many habits */
 }
 
-.habits-list-bento {
-    display: flex;
-    flex-direction: column;
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
     gap: 15px;
-    overflow-y: auto;
-    /* Allow scrolling internally if needed (though image capture might cut it off, better than overlap) */
+    height: 100%;
 }
 
-.habit-row-bento {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 15px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    flex-shrink: 0;
+.heatmap-cell {
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
 }
 
 /* Footer */
@@ -135,42 +227,9 @@
     margin-top: 20px;
     flex-shrink: 0;
     background: rgba(0, 0, 0, 0.3);
-    /* Add background for contrast */
     padding: 30px;
     border-radius: 30px;
     backdrop-filter: blur(10px);
-}
-
-.habit-icon-bento {
-    font-size: 48px;
-    width: 80px;
-    text-align: center;
-}
-
-.habit-text-bento {
-    flex: 1;
-    font-size: 36px;
-    font-weight: 600;
-}
-
-.habit-check-bento {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 30px;
-    font-weight: 900;
-}
-
-/* Footer */
-.bento-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-top: 40px;
 }
 
 .viral-hook {
