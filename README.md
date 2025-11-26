@@ -6,7 +6,7 @@
 
 **OPTIMAL APP** is not just a habit tracker. It is a **high-performance protocol** designed for those who refuse to be average. Built with a futuristic, cyberpunk aesthetic, it transforms your daily discipline into a visual masterpiece.
 
-![Optimal App Preview](https://github.com/user-attachments/assets/placeholder)
+![Optimal App Preview](public/preview.png)
 
 ## 🚀 THE PROTOCOL
 
