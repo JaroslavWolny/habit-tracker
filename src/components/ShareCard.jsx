@@ -6,113 +6,98 @@ const ShareCard = forwardRef(({ streak, habits, todayHabits }, ref) => {
     const totalCount = todayHabits.length;
     const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-    // Calculate stats for the graph
-    const categories = {
-        training: { total: 0, done: 0 },
-        nutrition: { total: 0, done: 0 },
-        recovery: { total: 0, done: 0 }
+    // Map categories to icons/labels/colors
+    const categoryConfig = {
+        training: { label: 'TRAINING', icon: '🏋️', color: '#39FF14' },
+        nutrition: { label: 'NUTRITION', icon: '🥑', color: '#FF39D1' },
+        recovery: { label: 'RECOVERY', icon: '💤', color: '#39D1FF' },
+        knowledge: { label: 'KNOWLEDGE', icon: '🧠', color: '#FFD139' },
+        default: { label: 'GENERAL', icon: '⚡', color: '#FFFFFF' }
     };
 
-    todayHabits.forEach(h => {
-        const cat = h.category || 'training';
-        if (categories[cat]) {
-            categories[cat].total++;
-            if (h.completed) categories[cat].done++;
-        }
-    });
-
-    const getPercent = (cat) => {
-        return categories[cat].total > 0
-            ? (categories[cat].done / categories[cat].total) * 100
-            : 0;
+    const getCategoryStyle = (cat) => {
+        const normalizedCat = cat ? cat.toLowerCase() : 'default';
+        return categoryConfig[normalizedCat] || categoryConfig.default;
     };
 
     return (
-        <div ref={ref} className="share-card-container-v2 fancy-card">
-            <div className="scan-line"></div>
-            <div className="share-card-content">
-                <div className="share-top-bar">
-                    <div className="tech-text">ID: JARO-001</div>
-                    <div className="tech-text">SYS: ONLINE</div>
-                </div>
+        <div ref={ref} className="share-card-container-v3">
+            {/* Background Elements */}
+            <div className="bg-grid"></div>
+            <div className="bg-glow-orb orb-top"></div>
+            <div className="bg-glow-orb orb-bottom"></div>
+            <div className="glass-surface"></div>
 
-                <div className="share-header">
-                    <div className="share-logo">
-                        <span className="logo-icon">⚡</span>
-                        <span>OPTIMAL APP</span>
+            <div className="card-content">
+                {/* Header */}
+                <div className="card-header">
+                    <div className="brand-badge">
+                        <span className="brand-icon">⚡</span>
+                        <span className="brand-text">OPTIMAL PROTOCOL</span>
                     </div>
-                    <div className="share-date">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()}</div>
-                </div>
-
-                <div className="share-main-stat">
-                    <div className="stat-circle-wrapper">
-                        <div className="stat-circle">
-                            <svg viewBox="0 0 100 100" className="progress-ring">
-                                <circle cx="50" cy="50" r="45" fill="none" stroke="#1a1a1a" strokeWidth="6" />
-                                <circle
-                                    cx="50" cy="50" r="45"
-                                    fill="none"
-                                    stroke="#39FF14"
-                                    strokeWidth="6"
-                                    strokeDasharray={`${percentage * 2.83} 283`}
-                                    strokeLinecap="butt"
-                                    transform="rotate(-90 50 50)"
-                                    style={{ filter: 'drop-shadow(0 0 10px #39FF14)' }}
-                                />
-                            </svg>
-                            <div className="stat-inner">
-                                <span className="stat-value">{percentage}%</span>
-                                <span className="stat-label">PROTOCOL</span>
-                            </div>
-                        </div>
-                        {percentage === 100 && (
-                            <div className="stamp-approved">
-                                SYSTEM OPTIMIZED
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="streak-display-large">
-                        <div className="streak-label">CURRENT STREAK</div>
-                        <div className="streak-number">
-                            <span className="fire">🔥</span> {streak} <span className="days">DAYS</span>
-                        </div>
+                    <div className="date-badge">
+                        {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase()}
                     </div>
                 </div>
 
-                <div className="share-pillars">
-                    <div className="pillar-row">
-                        <div className="pillar-info">
-                            <span className="pillar-icon">🏋️</span>
-                            <span className="pillar-label">TRAINING</span>
-                        </div>
-                        <div className="pillar-track">
-                            <div className="pillar-fill" style={{ width: `${getPercent('training')}%` }}></div>
-                        </div>
-                    </div>
-                    <div className="pillar-row">
-                        <div className="pillar-info">
-                            <span className="pillar-icon">🍗</span>
-                            <span className="pillar-label">NUTRITION</span>
-                        </div>
-                        <div className="pillar-track">
-                            <div className="pillar-fill" style={{ width: `${getPercent('nutrition')}%` }}></div>
+                {/* Main Stats - Hero Section */}
+                <div className="hero-stats">
+                    <div className="progress-container">
+                        <svg viewBox="0 0 100 100" className="progress-ring-hero">
+                            <circle cx="50" cy="50" r="45" className="ring-bg" />
+                            <circle
+                                cx="50" cy="50" r="45"
+                                className="ring-fill"
+                                strokeDasharray={`${percentage * 2.83} 283`}
+                                style={{ stroke: percentage === 100 ? '#39FF14' : '#ffffff' }}
+                            />
+                        </svg>
+                        <div className="progress-content">
+                            <span className="progress-percent">{percentage}%</span>
+                            <span className="progress-label">COMPLETE</span>
                         </div>
                     </div>
-                    <div className="pillar-row">
-                        <div className="pillar-info">
-                            <span className="pillar-icon">💤</span>
-                            <span className="pillar-label">RECOVERY</span>
+
+                    <div className="streak-container">
+                        <div className="streak-value">
+                            <span className="fire-icon">🔥</span>
+                            <span>{streak}</span>
                         </div>
-                        <div className="pillar-track">
-                            <div className="pillar-fill" style={{ width: `${getPercent('recovery')}%` }}></div>
-                        </div>
+                        <div className="streak-label">DAY STREAK</div>
                     </div>
                 </div>
 
-                <div className="share-footer">
-                    <div className="footer-line"></div>
-                    <p>JOIN THE 1% CLUB @OPTIMALAPP</p>
+                {/* Habits List */}
+                <div className="habits-section">
+                    <div className="section-title">TODAY'S MISSIONS</div>
+                    <div className="habits-list">
+                        {todayHabits.map((h, i) => {
+                            const style = getCategoryStyle(h.category);
+                            return (
+                                <div key={i} className={`habit-item ${h.completed ? 'completed' : 'pending'}`}>
+                                    <div className="habit-icon-wrapper" style={{
+                                        backgroundColor: h.completed ? style.color : 'rgba(255,255,255,0.05)',
+                                        color: h.completed ? '#000' : '#fff'
+                                    }}>
+                                        {style.icon}
+                                    </div>
+                                    <div className="habit-info">
+                                        <span className="habit-text">{h.text}</span>
+                                        <span className="habit-category" style={{ color: style.color }}>{style.label}</span>
+                                    </div>
+                                    <div className="habit-status-icon">
+                                        {h.completed ? '✓' : '•'}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="card-footer">
+                    <div className="footer-handle">@OPTIMALJARO</div>
+                    <div className="footer-tag">#BECOMEOPTIMAL</div>
                 </div>
             </div>
         </div>
