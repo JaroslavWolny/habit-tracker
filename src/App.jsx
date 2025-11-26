@@ -260,8 +260,6 @@ function App() {
 
   return (
     <div className="app-container">
-      <Award show={isAllDone} />
-
       <div className="header-row">
         <div className="app-brand">
           <h1>OPTIMAL APP</h1>
@@ -277,6 +275,8 @@ function App() {
           </div>
         </div>
       </div>
+
+      <Award show={isAllDone} />
 
       <div className="glass-panel main-panel">
 
@@ -296,8 +296,8 @@ function App() {
 
       <div className="fixed-action-bar">
         <button className="share-btn-large" onClick={handleShare}>
-          <span className="camera-icon">📡</span>
-          <span className="action-text">BROADCAST STATUS</span>
+          <span className="camera-icon">⚔️</span>
+          <span className="action-text">SHARE DOMINANCE</span>
           <div className="btn-shine"></div>
         </button>
       </div>

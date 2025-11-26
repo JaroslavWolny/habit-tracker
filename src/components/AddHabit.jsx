@@ -29,10 +29,10 @@ const AddHabit = ({ onAdd }) => {
                         textAlign: 'center'
                     }}
                 >
-                    <option value="training">🏋️</option>
-                    <option value="nutrition">🍗</option>
-                    <option value="recovery">💤</option>
-                    <option value="knowledge">🧠</option>
+                    <option value="training">🏋️ Training</option>
+                    <option value="nutrition">🍗 Nutrition</option>
+                    <option value="recovery">💤 Recovery</option>
+                    <option value="knowledge">🧠 Knowledge</option>
                 </select>
             </div>
             <input
