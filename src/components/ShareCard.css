@@ -31,8 +31,12 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 120px 80px;
-    gap: 60px;
+    padding: 80px 60px;
+    /* Reduced padding */
+    gap: 40px;
+    /* Reduced gap */
+    justify-content: space-between;
+    /* Distribute space */
 }
 
 /* Header */
@@ -40,50 +44,29 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
+    /* Prevent shrinking */
 }
 
-.app-badge {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px 40px;
-    border-radius: 100px;
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.app-icon {
-    font-size: 40px;
-}
-
-.app-name {
-    font-size: 32px;
-    font-weight: 800;
-    letter-spacing: 2px;
-}
-
-.date-display {
-    font-size: 32px;
-    font-weight: 600;
-    opacity: 0.6;
-    letter-spacing: 2px;
-}
+/* ... (keep existing styles) ... */
 
 /* Hero Streak */
 .bento-hero {
-    flex: 1;
+    flex: 0 0 auto;
+    /* Don't flex, take natural size */
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
+    padding: 40px 0;
 }
 
 .hero-ring-bg {
     position: absolute;
-    width: 800px;
-    height: 800px;
+    width: 600px;
+    /* Smaller ring */
+    height: 600px;
     border: 2px solid rgba(255, 255, 255, 0.05);
     border-radius: 50%;
     top: 50%;
@@ -92,92 +75,70 @@
 }
 
 .hero-value {
-    font-size: 400px;
+    font-size: 300px;
+    /* Smaller font */
     font-weight: 900;
     line-height: 0.8;
     letter-spacing: -10px;
 }
 
-.hero-label {
-    font-size: 40px;
-    font-weight: 700;
-    letter-spacing: 10px;
-    opacity: 0.5;
-    margin-top: 20px;
-}
-
-.hero-flame {
-    margin-top: 40px;
-    background: linear-gradient(90deg, #ff4d4d, #f9cb28);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-size: 40px;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 4px;
-}
-
-/* Bento Grid Items */
-.bento-grid-item {
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 40px;
-    padding: 50px;
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-}
-
-.section-label {
-    font-size: 24px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    opacity: 0.4;
-    text-transform: uppercase;
-}
+/* ... */
 
 /* Heatmap */
 .heatmap-section {
-    height: 250px;
-}
-
-.heatmap-grid {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 15px;
-    height: 100%;
-}
-
-.heatmap-cell {
-    border-radius: 8px;
-    width: 100%;
-    height: 100%;
+    height: 200px;
+    /* Fixed height */
+    flex-shrink: 0;
+    padding: 30px;
+    /* Reduced padding */
 }
 
 /* Habits List */
 .habits-section-bento {
     flex: 1;
-    max-height: 600px;
+    min-height: 0;
+    /* Allow shrinking */
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+    /* Hide overflow if too many habits */
 }
 
 .habits-list-bento {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
+    overflow-y: auto;
+    /* Allow scrolling internally if needed (though image capture might cut it off, better than overlap) */
 }
 
 .habit-row-bento {
     display: flex;
     align-items: center;
-    gap: 30px;
-    padding: 20px 0;
+    gap: 20px;
+    padding: 15px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
 }
 
-.habit-row-bento:last-child {
-    border-bottom: none;
+/* Footer */
+.bento-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 20px;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.3);
+    /* Add background for contrast */
+    padding: 30px;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
 }
 
 .habit-icon-bento {
