@@ -1,20 +1,39 @@
 import React, { useState } from 'react';
-import { Edit2, Trash2, Save, X, Check, Dumbbell, Utensils, Moon, Brain } from 'lucide-react';
+import { Edit2, Trash2, Save, X, Check } from 'lucide-react';
 import { motion } from 'framer-motion';
+import './HabitItem.css';
 
 const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(habit.text);
   const [showConfirm, setShowConfirm] = useState(false);
 
-  const handleSave = () => {
+  // Category Configuration (Same as AddHabit)
+  const categoryConfig = {
+    training: { label: 'Training', icon: '🏋️', color: '#39FF14' },
+    nutrition: { label: 'Nutrition', icon: '🥑', color: '#FF39D1' },
+    recovery: { label: 'Recovery', icon: '💤', color: '#39D1FF' },
+    knowledge: { label: 'Knowledge', icon: '🧠', color: '#FFD139' },
+    default: { label: 'General', icon: '⚡', color: '#FFFFFF' }
+  };
+
+  const getCategoryStyle = (cat) => {
+    const normalizedCat = cat ? cat.toLowerCase() : 'training';
+    return categoryConfig[normalizedCat] || categoryConfig.default;
+  };
+
+  const style = getCategoryStyle(habit.category);
+
+  const handleSave = (e) => {
+    e.stopPropagation();
     if (editText.trim()) {
       onEdit(habit.id, editText);
       setIsEditing(false);
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = (e) => {
+    e.stopPropagation();
     if (showConfirm) {
       onDelete(habit.id);
     } else {
@@ -29,75 +48,74 @@ const HabitItem = ({ habit, onToggle, onEdit, onDelete }) => {
     }
   };
 
-  const getCategoryIcon = (cat) => {
-    switch (cat) {
-      case 'training': return <Dumbbell size={16} />;
-      case 'nutrition': return <Utensils size={16} />;
-      case 'recovery': return <Moon size={16} />;
-      case 'knowledge': return <Brain size={16} />;
-      default: return <Dumbbell size={16} />;
-    }
-  };
-
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`habit-item ${habit.completed ? 'completed' : ''} ${habit.category || 'training'}`}
+      className={`habit-item-v2 ${habit.completed ? 'completed' : ''}`}
+      onClick={handleToggle}
+      style={{
+        '--item-color': style.color,
+        '--item-glow': style.color + '66' // 40% opacity
+      }}
     >
-      <div className="habit-main" onClick={handleToggle}>
-        <motion.div
-          className={`habit-checkbox ${habit.completed ? 'checked' : ''}`}
-          whileTap={{ scale: 0.8 }}
-          animate={{ scale: habit.completed ? [1, 1.2, 1] : 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          {habit.completed && <Check size={18} strokeWidth={4} color="black" />}
-        </motion.div>
+      {/* Icon Box */}
+      <div className="habit-icon-box">
+        {style.icon}
+      </div>
 
-        <div className="habit-content-wrapper">
-          {isEditing ? (
-            <input
-              type="text"
-              className="glass-input edit-input"
-              value={editText}
-              onChange={(e) => setEditText(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              autoFocus
-            />
-          ) : (
-            <div className="habit-info">
-              <div className="habit-header">
-                <span className={`category-icon ${habit.category || 'training'}`}>
-                  {getCategoryIcon(habit.category)}
-                </span>
-                <span className="habit-text">{habit.text}</span>
-              </div>
+      {/* Content */}
+      <div className="habit-content">
+        {isEditing ? (
+          <input
+            type="text"
+            className="edit-input-v2"
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            onClick={(e) => e.stopPropagation()}
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleSave(e);
+              if (e.key === 'Escape') setIsEditing(false);
+            }}
+          />
+        ) : (
+          <>
+            <div className="habit-text-v2">{habit.text}</div>
+            <div className="habit-meta">
+              <span className="habit-category-label">{style.label}</span>
               {habit.streak > 0 && (
-                <div className="habit-streak-badge">
-                  <span className="fire-emoji">🔥</span>
-                  <span className="streak-count">{habit.streak}</span>
+                <div className="streak-badge-v2">
+                  <span className="streak-fire">🔥</span>
+                  <span className="streak-val">{habit.streak}</span>
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </>
+        )}
+      </div>
 
-        <div className="habit-actions" onClick={(e) => e.stopPropagation()}>
-          {isEditing ? (
-            <button className="icon-btn save-btn" onClick={handleSave} aria-label="Save habit"><Save size={18} /></button>
-          ) : (
-            <button className="icon-btn edit-btn" onClick={() => setIsEditing(true)} aria-label="Edit habit"><Edit2 size={18} /></button>
-          )}
-          <button
-            className={`icon-btn delete-btn ${showConfirm ? 'confirming' : ''}`}
-            onClick={handleDelete}
-            aria-label="Delete habit"
-          >
-            {showConfirm ? <Trash2 size={18} color="#ef4444" /> : <X size={18} />}
+      {/* Actions (Visible on Hover/Edit) */}
+      <div className="habit-actions-v2" onClick={(e) => e.stopPropagation()}>
+        {isEditing ? (
+          <button className="action-btn-v2 save" onClick={handleSave}>
+            <Save size={16} />
           </button>
-        </div>
+        ) : (
+          <button className="action-btn-v2 edit" onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}>
+            <Edit2 size={16} />
+          </button>
+        )}
+
+        <button className={`action-btn-v2 delete ${showConfirm ? 'confirm' : ''}`} onClick={handleDelete}>
+          {showConfirm ? <Trash2 size={16} color="#ef4444" /> : <X size={16} />}
+        </button>
+      </div>
+
+      {/* Checkbox Status */}
+      <div className="habit-status-box">
+        {habit.completed && <Check size={18} strokeWidth={4} />}
       </div>
     </motion.div>
   );
