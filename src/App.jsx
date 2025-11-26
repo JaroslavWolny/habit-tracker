@@ -7,6 +7,7 @@ import Calendar from './components/Calendar';
 import Award from './components/Award';
 import ShareCard from './components/ShareCard';
 import LevelUpModal from './components/LevelUpModal';
+import MysteryBoxModal from './components/MysteryBoxModal';
 
 function App() {
   const [habits, setHabits] = useState(() => {
@@ -163,6 +164,17 @@ function App() {
     triggerHaptic('medium');
   };
 
+  const [inventory, setInventory] = useState(() => {
+    const saved = localStorage.getItem('user_inventory');
+    return saved ? JSON.parse(saved) : { achievements: [] };
+  });
+
+  const [showMysteryBox, setShowMysteryBox] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('user_inventory', JSON.stringify(inventory));
+  }, [inventory]);
+
   const toggleHabit = (id) => {
     const date = new Date();
     const currentToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -173,6 +185,7 @@ function App() {
 
       let newTodayCompleted;
       let xpChange = 0;
+      let shouldTriggerBox = false;
 
       if (isCompleted) {
         newTodayCompleted = todayCompleted.filter(hId => hId !== id);
@@ -185,22 +198,71 @@ function App() {
 
         // Check for Perfect Day (all habits completed)
         if (habits.length > 0 && newTodayCompleted.length === habits.length) {
-          xpChange += 50; // Bonus
-          confetti({
-            particleCount: 150,
-            spread: 60,
-            origin: { y: 0.7 }
-          });
+          // Check if box already claimed today
+          const lastBoxDate = prev.lastMysteryBoxDate;
+          if (lastBoxDate !== currentToday) {
+            shouldTriggerBox = true;
+          } else {
+            // Just confetti if already claimed
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+          }
         }
       }
 
       setXp(prevXp => Math.max(0, prevXp + xpChange));
+
+      if (shouldTriggerBox) {
+        setTimeout(() => setShowMysteryBox(true), 500);
+      }
 
       return {
         ...prev,
         [currentToday]: newTodayCompleted
       };
     });
+  };
+
+  const handleRewardClaimed = (reward) => {
+    const date = new Date();
+    const currentToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    // Mark box as claimed for today
+    setHistory(prev => ({
+      ...prev,
+      lastMysteryBoxDate: currentToday
+    }));
+
+    if (reward.type === 'xp') {
+      setXp(prev => prev + reward.amount);
+      confetti({
+        particleCount: 150,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: ['#fbbf24', '#f59e0b'] // Gold colors
+      });
+    } else if (reward.type === 'achievement') {
+      setInventory(prev => {
+        if (prev.achievements.includes(reward.id)) {
+          // Fallback XP if already owned
+          setXp(x => x + 100);
+          return prev;
+        }
+        return {
+          ...prev,
+          achievements: [...prev.achievements, reward.id]
+        };
+      });
+      confetti({
+        particleCount: 200,
+        spread: 120,
+        origin: { y: 0.6 },
+        colors: ['#d946ef', '#8b5cf6', '#06b6d4'] // Rare colors
+      });
+    }
   };
 
   const handleShare = async () => {
@@ -279,6 +341,12 @@ function App() {
         show={showLevelUp}
         level={level}
         onClose={() => setShowLevelUp(false)}
+      />
+
+      <MysteryBoxModal
+        show={showMysteryBox}
+        onClose={() => setShowMysteryBox(false)}
+        onRewardClaimed={handleRewardClaimed}
       />
     </div>
   );

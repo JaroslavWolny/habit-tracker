@@ -1289,4 +1289,88 @@ h1 {
     50% {
         transform: translateY(-10px);
     }
+}/* Mystery Box Styles */
+.mystery-box-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 10001;
+    /* Higher than level up */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.mystery-box-card {
+    background: linear-gradient(135deg, #2a1a3a, #0a0a0a);
+    border: 1px solid rgba(217, 70, 239, 0.3);
+    border-radius: 32px;
+    padding: 3rem;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow:
+        0 0 50px rgba(217, 70, 239, 0.2),
+        inset 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.mystery-box {
+    font-size: 8rem;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+    transition: transform 0.2s;
+}
+
+.mystery-box:hover {
+    transform: scale(1.05);
+}
+
+.box-container p {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    opacity: 0.8;
+}
+
+.reward-reveal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.reward-icon {
+    font-size: 6rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.5));
+}
+
+.reward-reveal h3 {
+    font-size: 2rem;
+    background: linear-gradient(to right, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0;
+}
+
+.reward-reveal p {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.claim-btn {
+    margin-top: 2rem;
+    width: 100%;
+    font-size: 1.25rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
 }
