@@ -1,10 +1,9 @@
-/* Share Card V3 - Premium Design */
+/* Viral Bento Card Styles */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&display=swap');
 
-.share-card-container-v3 {
+.share-card-bento {
     width: 1080px;
     height: 1920px;
-    background: #050505;
     position: relative;
     overflow: hidden;
     font-family: 'Outfit', sans-serif;
@@ -14,300 +13,220 @@
     box-sizing: border-box;
 }
 
-/* Background Layers */
-.bg-grid {
+.noise-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    pointer-events: none;
     z-index: 0;
 }
 
-.bg-glow-orb {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(150px);
-    opacity: 0.3;
-    z-index: 0;
-}
-
-.orb-top {
-    width: 900px;
-    height: 900px;
-    background: #39FF14;
-    top: -300px;
-    left: -200px;
-}
-
-.orb-bottom {
-    width: 1000px;
-    height: 1000px;
-    background: #00F0FF;
-    bottom: -400px;
-    right: -300px;
-}
-
-.glass-surface {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.01);
-    backdrop-filter: blur(2px);
-    z-index: 1;
-}
-
-/* Content Container */
-.card-content {
+.bento-content {
     position: relative;
     z-index: 10;
     height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 100px 80px;
-    justify-content: space-between;
+    padding: 120px 80px;
+    gap: 60px;
 }
 
 /* Header */
-.card-header {
+.bento-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 60px;
 }
 
-.brand-badge {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 15px 30px;
-    border-radius: 100px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-.brand-icon {
-    font-size: 32px;
-}
-
-.brand-text {
-    font-size: 24px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    color: white;
-}
-
-.date-badge {
-    font-size: 28px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.6);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-}
-
-/* Hero Stats */
-.hero-stats {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 80px;
-}
-
-.progress-container {
-    position: relative;
-    width: 420px;
-    height: 420px;
-}
-
-.progress-ring-hero {
-    width: 100%;
-    height: 100%;
-    transform: rotate(-90deg);
-}
-
-.ring-bg {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.1);
-    stroke-width: 6;
-}
-
-.ring-fill {
-    fill: none;
-    stroke: #39FF14;
-    stroke-width: 6;
-    stroke-linecap: round;
-    filter: drop-shadow(0 0 20px rgba(57, 255, 20, 0.6));
-}
-
-.progress-content {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.progress-percent {
-    font-size: 110px;
-    font-weight: 900;
-    line-height: 1;
-    color: white;
-    text-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
-}
-
-.progress-label {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 6px;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 10px;
-}
-
-.streak-container {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 50px 60px;
-    border-radius: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    backdrop-filter: blur(10px);
-}
-
-.streak-value {
+.app-badge {
     display: flex;
     align-items: center;
     gap: 20px;
-    font-size: 90px;
-    font-weight: 900;
-    line-height: 1;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px 40px;
+    border-radius: 100px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.fire-icon {
-    font-size: 80px;
-    filter: drop-shadow(0 0 30px orange);
+.app-icon {
+    font-size: 40px;
 }
 
-.streak-label {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: rgba(255, 255, 255, 0.5);
-    margin-top: 15px;
+.app-name {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 2px;
 }
 
-/* Habits Section */
-.habits-section {
+.date-display {
+    font-size: 32px;
+    font-weight: 600;
+    opacity: 0.6;
+    letter-spacing: 2px;
+}
+
+/* Hero Streak */
+.bento-hero {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.hero-ring-bg {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.hero-value {
+    font-size: 400px;
+    font-weight: 900;
+    line-height: 0.8;
+    letter-spacing: -10px;
+}
+
+.hero-label {
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 10px;
+    opacity: 0.5;
+    margin-top: 20px;
+}
+
+.hero-flame {
+    margin-top: 40px;
+    background: linear-gradient(90deg, #ff4d4d, #f9cb28);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 40px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+}
+
+/* Bento Grid Items */
+.bento-grid-item {
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 40px;
+    padding: 50px;
     display: flex;
     flex-direction: column;
     gap: 30px;
 }
 
-.section-title {
+.section-label {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 4px;
-    color: rgba(255, 255, 255, 0.4);
+    opacity: 0.4;
     text-transform: uppercase;
-    margin-left: 20px;
 }
 
-.habits-list {
+/* Heatmap */
+.heatmap-section {
+    height: 250px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 15px;
+    height: 100%;
+}
+
+.heatmap-cell {
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+}
+
+/* Habits List */
+.habits-section-bento {
+    flex: 1;
+    max-height: 600px;
+}
+
+.habits-list-bento {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.habit-item {
+.habit-row-bento {
     display: flex;
     align-items: center;
-    padding: 25px 30px;
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    transition: all 0.3s ease;
+    gap: 30px;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.habit-item.completed {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+.habit-row-bento:last-child {
+    border-bottom: none;
 }
 
-.habit-icon-wrapper {
-    width: 70px;
-    height: 70px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 36px;
-    margin-right: 30px;
-}
-
-.habit-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.habit-text {
-    font-size: 32px;
-    font-weight: 600;
-    color: white;
-}
-
-.habit-category {
-    font-size: 16px;
-    font-weight: 800;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-}
-
-.habit-status-icon {
-    font-size: 36px;
-    font-weight: 900;
-    color: rgba(255, 255, 255, 0.2);
-    width: 50px;
+.habit-icon-bento {
+    font-size: 48px;
+    width: 80px;
     text-align: center;
 }
 
-.habit-item.completed .habit-status-icon {
-    color: #39FF14;
-    filter: drop-shadow(0 0 10px #39FF14);
+.habit-text-bento {
+    flex: 1;
+    font-size: 36px;
+    font-weight: 600;
+}
+
+.habit-check-bento {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 900;
 }
 
 /* Footer */
-.card-footer {
-    margin-top: 60px;
+.bento-footer {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 40px;
+    align-items: flex-end;
+    margin-top: 40px;
 }
 
-.footer-handle {
-    font-size: 36px;
+.viral-hook {
+    font-size: 48px;
     font-weight: 900;
-    color: white;
-    letter-spacing: 2px;
+    line-height: 1.1;
+    margin-bottom: 20px;
 }
 
-.footer-tag {
+.download-cta {
     font-size: 24px;
-    font-weight: 600;
-    color: rgba(255, 255, 255, 0.4);
-    letter-spacing: 4px;
+    opacity: 0.6;
+    font-weight: 500;
+}
+
+.qr-code-wrapper {
+    background: white;
+    padding: 20px;
+    border-radius: 30px;
 }

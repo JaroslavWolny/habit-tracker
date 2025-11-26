@@ -308,6 +308,7 @@ function App() {
           streak={streak}
           habits={habits}
           todayHabits={todayHabits}
+          history={history}
         />
       </div>
 
