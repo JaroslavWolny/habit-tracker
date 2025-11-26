@@ -2,7 +2,7 @@
 .share-card-container-v2 {
     width: 1080px;
     height: 1920px;
-    background: #000000;
+    background: #050505;
     position: relative;
     overflow: hidden;
     font-family: 'Outfit', sans-serif;
@@ -29,6 +29,30 @@
     pointer-events: none;
 }
 
+/* Scanline Effect */
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: rgba(57, 255, 20, 0.1);
+    opacity: 0.5;
+    animation: scan 6s linear infinite;
+    z-index: 2;
+    pointer-events: none;
+}
+
+@keyframes scan {
+    0% {
+        top: -10%;
+    }
+
+    100% {
+        top: 110%;
+    }
+}
+
 .share-card-content {
     position: relative;
     z-index: 1;
@@ -38,11 +62,26 @@
     justify-content: space-between;
 }
 
+.share-top-bar {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+}
+
+.tech-text {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    color: rgba(57, 255, 20, 0.8);
+    letter-spacing: 2px;
+}
+
 .share-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 2px solid #39FF14;
+    border-bottom: 4px solid #39FF14;
     padding-bottom: 40px;
 }
 
@@ -51,19 +90,22 @@
     align-items: center;
     gap: 20px;
     font-size: 48px;
-    font-weight: 800;
-    letter-spacing: 2px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    font-style: italic;
 }
 
 .logo-icon {
     color: #39FF14;
+    filter: drop-shadow(0 0 10px #39FF14);
 }
 
 .share-date {
     font-size: 32px;
     color: #888;
-    font-weight: 600;
-    letter-spacing: 2px;
+    font-weight: 700;
+    letter-spacing: 4px;
+    font-family: 'Courier New', monospace;
 }
 
 .share-main-stat {
@@ -72,7 +114,11 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 80px;
+    gap: 100px;
+}
+
+.stat-circle-wrapper {
+    position: relative;
 }
 
 .stat-circle {
@@ -93,83 +139,163 @@
 .stat-inner {
     position: absolute;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .stat-value {
     display: block;
-    font-size: 160px;
+    font-size: 180px;
     font-weight: 900;
     line-height: 1;
     color: white;
-    text-shadow: 0 0 40px rgba(57, 255, 20, 0.3);
+    text-shadow: 0 0 40px rgba(57, 255, 20, 0.4);
+    font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
     display: block;
-    font-size: 40px;
+    font-size: 32px;
     font-weight: 700;
     color: #39FF14;
-    letter-spacing: 8px;
+    letter-spacing: 12px;
     margin-top: 20px;
+    background: rgba(57, 255, 20, 0.1);
+    padding: 10px 30px;
+    border-radius: 100px;
 }
 
-.streak-badge {
-    font-size: 48px;
-    font-weight: 800;
-    background: rgba(57, 255, 20, 0.1);
-    border: 2px solid #39FF14;
-    padding: 20px 60px;
-    border-radius: 100px;
+.stamp-approved {
+    position: absolute;
+    bottom: -40px;
+    right: -40px;
+    border: 8px solid #39FF14;
     color: #39FF14;
+    font-size: 48px;
+    font-weight: 900;
+    padding: 20px 40px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    box-shadow: 0 0 40px rgba(57, 255, 20, 0.2);
+    letter-spacing: 4px;
+    transform: rotate(-15deg);
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 40px rgba(57, 255, 20, 0.3);
+    border-radius: 20px;
+    z-index: 10;
+}
+
+.streak-display-large {
+    text-align: center;
+}
+
+.streak-label {
+    font-size: 24px;
+    color: #888;
+    letter-spacing: 8px;
+    margin-bottom: 10px;
+}
+
+.streak-number {
+    font-size: 80px;
+    font-weight: 900;
+    color: white;
+}
+
+.streak-number .fire {
+    font-size: 80px;
+    filter: drop-shadow(0 0 20px orange);
+}
+
+.streak-number .days {
+    font-size: 32px;
+    color: #888;
+    font-weight: 600;
 }
 
 .share-pillars {
     display: flex;
     flex-direction: column;
-    gap: 40px;
+    gap: 50px;
     margin-bottom: 100px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 60px;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .pillar-row {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
+}
+
+.pillar-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.pillar-icon {
+    font-size: 40px;
 }
 
 .pillar-label {
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 800;
     letter-spacing: 4px;
-    color: #888;
+    color: white;
 }
 
 .pillar-track {
-    height: 24px;
-    background: #1a1a1a;
-    border-radius: 12px;
+    height: 32px;
+    background: #111;
+    border-radius: 16px;
     overflow: hidden;
-    border: 1px solid #333;
+    border: 2px solid #333;
+    position: relative;
+}
+
+/* Grid lines in track */
+.pillar-track::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(90deg, transparent 19%, rgba(255, 255, 255, 0.1) 20%);
+    background-size: 20% 100%;
 }
 
 .pillar-fill {
     height: 100%;
     background: #39FF14;
-    box-shadow: 0 0 20px #39FF14;
+    box-shadow: 0 0 30px #39FF14;
+    position: relative;
+    z-index: 1;
 }
 
 .share-footer {
     text-align: center;
-    border-top: 2px solid #333;
-    padding-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+.footer-line {
+    width: 100px;
+    height: 6px;
+    background: #39FF14;
+    border-radius: 100px;
+    box-shadow: 0 0 20px #39FF14;
 }
 
 .share-footer p {
-    font-size: 32px;
-    color: #888;
-    font-weight: 600;
-    letter-spacing: 4px;
+    font-size: 36px;
+    color: white;
+    font-weight: 800;
+    letter-spacing: 6px;
     margin: 0;
+    text-transform: uppercase;
 }

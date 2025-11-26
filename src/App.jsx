@@ -283,7 +283,7 @@ function App() {
         />
 
         <button className="glass-button share-btn" onClick={handleShare}>
-          EXPORT DATA 📸
+          PROOF OF WORK 📸
         </button>
 
         <Calendar history={history} habits={habits} />
