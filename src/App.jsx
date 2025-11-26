@@ -6,9 +6,9 @@ import AddHabit from './components/AddHabit';
 import Calendar from './components/Calendar';
 import Award from './components/Award';
 import ShareCard from './components/ShareCard';
-import LevelUpModal from './components/LevelUpModal';
-import MysteryBoxModal from './components/MysteryBoxModal';
-import AvatarWidget from './components/AvatarWidget';
+import BodyWidget from './components/BodyWidget';
+import PerformanceStats from './components/PerformanceStats';
+import KnowledgeCardModal from './components/KnowledgeCardModal';
 
 function App() {
   const [habits, setHabits] = useState(() => {
@@ -21,11 +21,7 @@ function App() {
     return saved ? JSON.parse(saved) : {};
   });
 
-  const [xp, setXp] = useState(() => {
-    const saved = localStorage.getItem('user_xp');
-    return saved ? parseInt(saved) : 0;
-  });
-
+  const [showKnowledgeCard, setShowKnowledgeCard] = useState(false);
   const shareRef = useRef(null);
 
   useEffect(() => {
@@ -36,39 +32,12 @@ function App() {
     localStorage.setItem('habit_history', JSON.stringify(history));
   }, [history]);
 
-  useEffect(() => {
-    localStorage.setItem('user_xp', xp.toString());
-  }, [xp]);
-
   const getTodayStr = () => {
     const date = new Date();
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
 
   const today = getTodayStr();
-
-  const calculateLevel = (currentXp) => {
-    return Math.floor(currentXp / 500) + 1;
-  };
-
-  const [showLevelUp, setShowLevelUp] = useState(false);
-  const previousLevel = useRef(calculateLevel(xp));
-
-  useEffect(() => {
-    const currentLevel = calculateLevel(xp);
-    if (currentLevel > previousLevel.current) {
-      setShowLevelUp(true);
-      confetti({
-        particleCount: 200,
-        spread: 100,
-        origin: { y: 0.6 }
-      });
-    }
-    previousLevel.current = currentLevel;
-  }, [xp]);
-
-  const level = calculateLevel(xp);
-  const xpProgress = xp % 500;
 
   const calculateStreak = () => {
     let streak = 0;
@@ -151,8 +120,8 @@ function App() {
     }
   };
 
-  const addHabit = (text) => {
-    setHabits([...habits, { id: Date.now(), text }]);
+  const addHabit = (text, category = 'training') => {
+    setHabits([...habits, { id: Date.now(), text, category }]);
     triggerHaptic('light');
   };
 
@@ -165,97 +134,6 @@ function App() {
     triggerHaptic('medium');
   };
 
-  const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem('user_inventory');
-    return saved ? JSON.parse(saved) : { achievements: [] };
-  });
-
-  const [showMysteryBox, setShowMysteryBox] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('user_inventory', JSON.stringify(inventory));
-  }, [inventory]);
-
-  const [avatar, setAvatar] = useState(() => {
-    const saved = localStorage.getItem('user_avatar');
-    return saved ? JSON.parse(saved) : {
-      stage: 1,
-      xp: 0,
-      health: 100,
-      maxHealth: 100,
-      isDead: false,
-      lastHealthCheck: new Date().toDateString()
-    };
-  });
-
-  useEffect(() => {
-    localStorage.setItem('user_avatar', JSON.stringify(avatar));
-  }, [avatar]);
-
-  // Health Decay Logic
-  useEffect(() => {
-    const checkHealthDecay = () => {
-      const todayDate = new Date();
-      const lastCheck = new Date(avatar.lastHealthCheck);
-
-      // If already checked today, skip
-      if (lastCheck.toDateString() === todayDate.toDateString()) return;
-
-      // Check yesterday
-      const yesterday = new Date(todayDate);
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-
-      // Get habits that existed yesterday
-      const endOfYesterday = new Date(yesterday);
-      endOfYesterday.setHours(23, 59, 59, 999);
-
-      const yesterdayHabits = habits.filter(h => {
-        if (typeof h.id !== 'number') return true;
-        return h.id <= endOfYesterday.getTime();
-      });
-
-      if (yesterdayHabits.length > 0) {
-        const completedYesterday = history[yesterdayStr] || [];
-        const missedCount = yesterdayHabits.length - completedYesterday.length;
-
-        if (missedCount > 0) {
-          setAvatar(prev => {
-            const newHealth = Math.max(0, prev.health - (missedCount * 10));
-            return {
-              ...prev,
-              health: newHealth,
-              isDead: newHealth <= 0,
-              lastHealthCheck: todayDate.toDateString()
-            };
-          });
-        } else {
-          // Update check date even if no damage
-          setAvatar(prev => ({ ...prev, lastHealthCheck: todayDate.toDateString() }));
-        }
-      } else {
-        setAvatar(prev => ({ ...prev, lastHealthCheck: todayDate.toDateString() }));
-      }
-    };
-
-    if (!avatar.isDead) {
-      checkHealthDecay();
-    }
-  }, [habits, history, avatar.isDead, avatar.lastHealthCheck]); // Depend on habits/history to ensure they are loaded
-
-  const handleRevive = () => {
-    // In a real app, this might cost currency
-    setAvatar({
-      stage: 1,
-      xp: 0,
-      health: 100,
-      maxHealth: 100,
-      isDead: false,
-      lastHealthCheck: new Date().toDateString()
-    });
-    triggerHaptic('success');
-  };
-
   const toggleHabit = (id) => {
     const date = new Date();
     const currentToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -265,128 +143,54 @@ function App() {
       const isCompleted = todayCompleted.includes(id);
 
       let newTodayCompleted;
-      let xpChange = 0;
-      let shouldTriggerBox = false;
-
-      // Avatar updates
-      let avatarXpChange = 0;
-      let avatarHealthChange = 0;
+      let shouldTriggerCard = false;
 
       if (isCompleted) {
         newTodayCompleted = todayCompleted.filter(hId => hId !== id);
-        xpChange = -10;
-        avatarXpChange = -10; // Revert XP
         triggerHaptic('light');
       } else {
         newTodayCompleted = [...todayCompleted, id];
-        xpChange = 10;
-        avatarXpChange = 10;
         triggerHaptic('success');
 
-        // Check for Perfect Day (all habits completed)
+        // Check for Perfect Day
         if (habits.length > 0 && newTodayCompleted.length === habits.length) {
-          xpChange += 50; // Bonus
-          avatarXpChange += 50;
-          avatarHealthChange = 10; // Heal
-
-          // Check if box already claimed today
-          const lastBoxDate = prev.lastMysteryBoxDate;
-          if (lastBoxDate !== currentToday) {
-            shouldTriggerBox = true;
+          // Check if already claimed today (using same key as mystery box for simplicity)
+          const lastCardDate = prev.lastMysteryBoxDate;
+          if (lastCardDate !== currentToday) {
+            shouldTriggerCard = true;
           } else {
-            // Just confetti if already claimed
             confetti({
               particleCount: 100,
               spread: 70,
-              origin: { y: 0.6 }
+              origin: { y: 0.6 },
+              colors: ['#39FF14', '#ffffff'] // Neon Green & White
             });
           }
         }
       }
 
-      setXp(prevXp => Math.max(0, prevXp + xpChange));
-
-      // Update Avatar
-      if (!avatar.isDead) {
-        setAvatar(prev => {
-          let newXp = Math.max(0, prev.xp + avatarXpChange);
-          let newHealth = Math.min(prev.maxHealth, prev.health + avatarHealthChange);
-          let newStage = prev.stage;
-
-          // Evolution Logic
-          if (prev.stage === 1 && newXp >= 500) newStage = 2;
-          if (prev.stage === 2 && newXp >= 1500) newStage = 3;
-
-          return {
-            ...prev,
-            xp: newXp,
-            health: newHealth,
-            stage: newStage
-          };
-        });
-      }
-
-      if (shouldTriggerBox) {
-        setTimeout(() => setShowMysteryBox(true), 500);
+      if (shouldTriggerCard) {
+        setTimeout(() => setShowKnowledgeCard(true), 500);
       }
 
       return {
         ...prev,
-        [currentToday]: newTodayCompleted
+        [currentToday]: newTodayCompleted,
+        lastMysteryBoxDate: shouldTriggerCard ? currentToday : prev.lastMysteryBoxDate
       };
     });
-  };
-
-  const handleRewardClaimed = (reward) => {
-    const date = new Date();
-    const currentToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-    // Mark box as claimed for today
-    setHistory(prev => ({
-      ...prev,
-      lastMysteryBoxDate: currentToday
-    }));
-
-    if (reward.type === 'xp') {
-      setXp(prev => prev + reward.amount);
-      confetti({
-        particleCount: 150,
-        spread: 100,
-        origin: { y: 0.6 },
-        colors: ['#fbbf24', '#f59e0b'] // Gold colors
-      });
-    } else if (reward.type === 'achievement') {
-      setInventory(prev => {
-        if (prev.achievements.includes(reward.id)) {
-          // Fallback XP if already owned
-          setXp(x => x + 100);
-          return prev;
-        }
-        return {
-          ...prev,
-          achievements: [...prev.achievements, reward.id]
-        };
-      });
-      confetti({
-        particleCount: 200,
-        spread: 120,
-        origin: { y: 0.6 },
-        colors: ['#d946ef', '#8b5cf6', '#06b6d4'] // Rare colors
-      });
-    }
   };
 
   const handleShare = async () => {
     if (shareRef.current) {
       const canvas = await html2canvas(shareRef.current, {
-        backgroundColor: '#0a0a0a',
+        backgroundColor: '#000000',
         scale: 2
       });
       const image = canvas.toDataURL("image/png");
-
       const link = document.createElement('a');
       link.href = image;
-      link.download = `habit-streak-${today}.png`;
+      link.download = `optimal-body-${today}.png`;
       link.click();
     }
   };
@@ -400,31 +204,75 @@ function App() {
   const completedCount = (history[today] || []).filter(id => habits.some(h => h.id === id)).length;
   const isAllDone = habits.length > 0 && completedCount === habits.length;
 
+  // Calculate Stats for Dashboard
+  const calculateStats = () => {
+    const stats = {
+      training: 0, // 0-1 for BodyWidget
+      nutrition: 0,
+      recovery: 0,
+      str: 0, // 0-100% for PerformanceStats
+      rec: 0,
+      know: 0
+    };
+
+    const categories = {
+      training: { total: 0, done: 0 },
+      nutrition: { total: 0, done: 0 },
+      recovery: { total: 0, done: 0 },
+      knowledge: { total: 0, done: 0 }
+    };
+
+    todayHabits.forEach(h => {
+      const cat = h.category || 'training'; // Default to training if missing
+      if (categories[cat]) {
+        categories[cat].total++;
+        if (h.completed) categories[cat].done++;
+      }
+    });
+
+    // Body Widget Stats (0-1)
+    stats.training = categories.training.total > 0 ? categories.training.done / categories.training.total : 0;
+    stats.nutrition = categories.nutrition.total > 0 ? categories.nutrition.done / categories.nutrition.total : 0;
+    stats.recovery = categories.recovery.total > 0 ? categories.recovery.done / categories.recovery.total : 0;
+
+    // Performance Stats (0-100%)
+    // STR = Training + Knowledge (Discipline)
+    const strTotal = categories.training.total + categories.knowledge.total;
+    const strDone = categories.training.done + categories.knowledge.done;
+    stats.str = strTotal > 0 ? (strDone / strTotal) * 100 : 0;
+
+    // REC = Recovery + Nutrition (Health)
+    const recTotal = categories.recovery.total + categories.nutrition.total;
+    const recDone = categories.recovery.done + categories.nutrition.done;
+    stats.rec = recTotal > 0 ? (recDone / recTotal) * 100 : 0;
+
+    // KNOW = Knowledge (Focus) - Or maybe map differently? 
+    // Prompt says: STR (Training), REC (Sleep/Food), KNOW (Study).
+    // Let's map strictly:
+    stats.str = categories.training.total > 0 ? (categories.training.done / categories.training.total) * 100 : 0;
+    stats.rec = (categories.recovery.total + categories.nutrition.total) > 0 ? ((categories.recovery.done + categories.nutrition.done) / (categories.recovery.total + categories.nutrition.total)) * 100 : 0;
+    stats.know = categories.knowledge.total > 0 ? (categories.knowledge.done / categories.knowledge.total) * 100 : 0;
+
+    return stats;
+  };
+
+  const currentStats = calculateStats();
+
   return (
     <div className="app-container">
       <Award show={isAllDone} />
 
       <div className="header-row">
-        <h1>Habit Tracker</h1>
+        <h1>OPTIMAL BODY</h1>
         <div className="streak-display">
-          🔥 {streak}
+          🔥 {streak}%
         </div>
       </div>
 
       <div className="glass-panel main-panel">
 
-        <AvatarWidget avatar={avatar} onRevive={handleRevive} />
-
-        <div className="rpg-stats">
-          <div className="level-badge">
-            <span className="level-label">LVL</span>
-            <span className="level-number">{level}</span>
-          </div>
-          <div className="xp-bar-container">
-            <div className="xp-bar" style={{ width: `${xpProgress / 5}%` }}></div>
-            <span className="xp-text">{xpProgress} / 500 XP</span>
-          </div>
-        </div>
+        <BodyWidget stats={currentStats} />
+        <PerformanceStats stats={currentStats} />
 
         <AddHabit onAdd={addHabit} />
         <HabitList
@@ -435,7 +283,7 @@ function App() {
         />
 
         <button className="glass-button share-btn" onClick={handleShare}>
-          Share Progress 📸
+          EXPORT DATA 📸
         </button>
 
         <Calendar history={history} habits={habits} />
@@ -450,16 +298,9 @@ function App() {
         />
       </div>
 
-      <LevelUpModal
-        show={showLevelUp}
-        level={level}
-        onClose={() => setShowLevelUp(false)}
-      />
-
-      <MysteryBoxModal
-        show={showMysteryBox}
-        onClose={() => setShowMysteryBox(false)}
-        onRewardClaimed={handleRewardClaimed}
+      <KnowledgeCardModal
+        show={showKnowledgeCard}
+        onClose={() => setShowKnowledgeCard(false)}
       />
     </div>
   );

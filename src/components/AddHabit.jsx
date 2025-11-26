@@ -3,21 +3,33 @@ import { Plus } from 'lucide-react';
 
 const AddHabit = ({ onAdd }) => {
     const [text, setText] = useState('');
+    const [category, setCategory] = useState('training'); // training, nutrition, recovery, knowledge
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (text.trim()) {
-            onAdd(text);
+            onAdd(text, category);
             setText('');
         }
     };
 
     return (
         <form onSubmit={handleSubmit} className="add-habit-form">
+            <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="glass-input category-select"
+                style={{ width: 'auto', flex: '0 0 auto', paddingRight: '2rem' }}
+            >
+                <option value="training">🏋️ Training</option>
+                <option value="nutrition">🍗 Nutrition</option>
+                <option value="recovery">💤 Recovery</option>
+                <option value="knowledge">🧠 Knowledge</option>
+            </select>
             <input
                 type="text"
                 className="glass-input"
-                placeholder="Add a new habit..."
+                placeholder="Add protocol..."
                 value={text}
                 onChange={(e) => setText(e.target.value)}
             />
