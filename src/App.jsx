@@ -264,11 +264,6 @@ function App() {
 
       <div className="header-row">
         <div className="app-brand">
-          <div className="logo-container">
-            <svg viewBox="0 0 100 100" className="app-logo-svg">
-              <path d="M20,20 L80,20 L80,80 L50,80 L50,50 L20,50 Z" fill="none" stroke="var(--primary)" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
           <h1>OPTIMAL APP</h1>
         </div>
         <div className="streak-display-v2">
@@ -300,9 +295,9 @@ function App() {
       </div>
 
       <div className="fixed-action-bar">
-        <button className="glass-button share-btn-large" onClick={handleShare}>
-          <span className="camera-icon">📸</span>
-          <span className="action-text">PROOF OF WORK</span>
+        <button className="share-btn-large" onClick={handleShare}>
+          <span className="camera-icon">📡</span>
+          <span className="action-text">BROADCAST STATUS</span>
           <div className="btn-shine"></div>
         </button>
       </div>

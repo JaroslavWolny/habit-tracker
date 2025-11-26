@@ -82,20 +82,22 @@ body,
   width: 100%;
   padding: 1rem;
   padding-bottom: max(1rem, env(safe-area-inset-bottom));
-  background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 80%, transparent 100%);
-  z-index: 100;
+  background: linear-gradient(to top, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.9) 60%, transparent 100%);
+  z-index: 9999;
   display: flex;
   justify-content: center;
   pointer-events: none;
   /* Let clicks pass through gradient area */
+  box-sizing: border-box;
 }
 
 .share-btn-large {
   pointer-events: auto;
   width: 100%;
-  max-width: 600px;
+  max-width: 100%;
+  /* Ensure it can fill the container */
   padding: 1.25rem;
-  border-radius: 24px;
+  border-radius: 20px;
   background: var(--primary);
   color: black;
   font-size: 1.25rem;
@@ -113,6 +115,8 @@ body,
   position: relative;
   overflow: hidden;
   transition: all 0.2s;
+  white-space: nowrap;
+  /* Prevent text wrapping */
 }
 
 .share-btn-large:active {
@@ -126,7 +130,7 @@ body,
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
   transform: skewX(-20deg);
   animation: shine 3s infinite;
 }
@@ -155,12 +159,12 @@ body,
   justify-content: space-between;
   align-items: center;
   padding: 0 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .app-brand {
   display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
 .logo-container {
@@ -181,15 +185,16 @@ body,
 }
 
 .header-row h1 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: 1px;
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: -1px;
   margin: 0;
-  background: linear-gradient(to right, #fff, #ccc);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: white;
   font-style: italic;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
+  background: none;
+  -webkit-text-fill-color: white;
 }
 
 /* Streak Display V2 */
