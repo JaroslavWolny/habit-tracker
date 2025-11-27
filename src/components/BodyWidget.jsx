@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, Capsule, Cylinder, Box, RoundedBox } from '@react-three/drei';
+import { OrbitControls, Sphere, Capsule, Cylinder, Box, RoundedBox, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
 import './BodyWidget.css';
 
@@ -15,16 +15,18 @@ const MuscleGroup = ({ position, rotation, scale = [1, 1, 1], pump, baseSize, co
         scale[2] * growth
     ];
 
-    // Dynamic Emissive Material
-    // If intensity > 0, it glows with the specific category color.
-    // Otherwise, it's a sleek dark matte material.
+    // MATERIAL LOGIC:
+    // Base Color: Always visible dark grey (#444) to ensure visibility at 0 stats.
+    // Emissive: Adds the colored glow on top based on intensity.
     const Material = (
-        <meshStandardMaterial
-            color={intensity > 0 ? color : "#2a2a2a"} // Dark grey base
-            roughness={0.5}
-            metalness={0.6}
+        <meshPhysicalMaterial
+            color={intensity > 0 ? color : "#444444"} // Lighter base for visibility
+            roughness={0.4}
+            metalness={0.7}
+            clearcoat={0.5} // Shiny coating
+            clearcoatRoughness={0.1}
             emissive={color}
-            emissiveIntensity={intensity * 2} // Glow brightness
+            emissiveIntensity={intensity * 1.5} // Glow brightness
         />
     );
 
@@ -76,8 +78,8 @@ const SyntheticHuman = ({ stats }) => {
     useFrame((state) => {
         const t = state.clock.getElapsedTime();
         if (group.current) {
-            group.current.position.y = Math.sin(t * 0.5) * 0.05;
-            group.current.rotation.y = Math.sin(t * 0.2) * 0.1;
+            group.current.position.y = -1.2 + Math.sin(t * 0.5) * 0.05; // Lowered base position
+            group.current.rotation.y = Math.sin(t * 0.2) * 0.15;
         }
         if (scanLine.current) {
             scanLine.current.position.y = -2 + (Math.sin(t * 0.5) + 1) * 2;
@@ -86,24 +88,19 @@ const SyntheticHuman = ({ stats }) => {
     });
 
     return (
-        <group ref={group} position={[0, -0.5, 0]}> {/* Shifted down for better framing */}
-
+        <group ref={group}>
             {/* --- BRAIN (Knowledge) --- */}
-            {/* Skull/Head */}
             <MuscleGroup position={[0, 1.75, 0]} baseSize={[0.22]} geometry="sphere" pump={0} color={colKnowledge} intensity={knowledge} />
             <MuscleGroup position={[0, 1.65, 0.05]} baseSize={[0.2, 0.25, 0.22]} geometry="box" pump={0} color={colKnowledge} intensity={knowledge * 0.5} />
 
             {/* --- CORE (Nutrition) --- */}
-            {/* Abs (Six Pack) */}
             <MuscleGroup position={[-0.08, 1.1, 0.14]} scale={[1, 0.6, 0.3]} baseSize={[0.1]} geometry="sphere" pump={training} color={colNutrition} intensity={nutrition} />
             <MuscleGroup position={[0.08, 1.1, 0.14]} scale={[1, 0.6, 0.3]} baseSize={[0.1]} geometry="sphere" pump={training} color={colNutrition} intensity={nutrition} />
             <MuscleGroup position={[-0.08, 1.0, 0.14]} scale={[1, 0.6, 0.3]} baseSize={[0.09]} geometry="sphere" pump={training} color={colNutrition} intensity={nutrition} />
             <MuscleGroup position={[0.08, 1.0, 0.14]} scale={[1, 0.6, 0.3]} baseSize={[0.09]} geometry="sphere" pump={training} color={colNutrition} intensity={nutrition} />
 
             {/* --- SPINE (Recovery) --- */}
-            {/* Neck */}
             <MuscleGroup position={[0, 1.5, 0]} baseSize={[0.12, 0.3]} geometry="capsule" pump={training} color={colRecovery} intensity={recovery} />
-            {/* Spine Column */}
             <MuscleGroup position={[0, 1.1, 0]} baseSize={[0.18, 0.6]} geometry="capsule" pump={0} color={colRecovery} intensity={recovery} />
 
             {/* --- MUSCLES (Training) --- */}
@@ -162,7 +159,7 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
     }, []);
 
     return (
-        <div className="body-widget-container" style={{ height: '45vh', minHeight: '350px', width: '100%', position: 'relative', overflow: 'visible' }}>
+        <div className="body-widget-container" style={{ height: '40vh', minHeight: '300px', width: '100%', position: 'relative', overflow: 'visible' }}>
 
             {/* Chat Bubble Overlay */}
             <div className="cyber-chat-bubble" style={{ top: '10px', right: '10px', pointerEvents: 'none' }}>
@@ -170,24 +167,33 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
             </div>
 
             {/* 3D SCENE */}
-            <Canvas camera={{ position: [0, 0, 4], fov: 40 }} gl={{ antialias: true, alpha: true }}>
-                {/* NO BACKGROUND COLOR - Transparent Canvas */}
+            {/* Adjusted Camera: Further back (z: 5.5) and slightly higher (y: 0.5) to frame the whole body better */}
+            <Canvas camera={{ position: [0, 0.5, 5.5], fov: 35 }} gl={{ antialias: true, alpha: true }}>
+
+                {/* STUDIO ENVIRONMENT */}
+                {/* Adds realistic reflections and ambient light */}
+                <Environment preset="city" />
 
                 {/* LIGHTING */}
-                <ambientLight intensity={0.3} />
+                <ambientLight intensity={0.5} />
                 <spotLight position={[5, 5, 5]} angle={0.3} penumbra={1} intensity={1} />
                 <pointLight position={[-5, -5, -5]} intensity={0.5} color="#ffffff" />
-                <pointLight position={[0, 2, 3]} intensity={0.5} color="#ffffff" />
+
+                {/* RIM LIGHT - Crucial for visibility at 0 stats */}
+                <spotLight position={[0, 2, -5]} intensity={5} color="#ffffff" distance={10} />
 
                 {/* THE SYNTHETIC HUMAN */}
                 <SyntheticHuman stats={stats} />
+
+                {/* SHADOWS */}
+                <ContactShadows position={[0, -2, 0]} opacity={0.5} scale={10} blur={2.5} far={4} />
 
                 {/* CONTROLS */}
                 <OrbitControls
                     enableZoom={false}
                     enablePan={false}
                     autoRotate={true}
-                    autoRotateSpeed={1}
+                    autoRotateSpeed={0.8}
                     minPolarAngle={Math.PI / 2.5}
                     maxPolarAngle={Math.PI / 1.5}
                 />
