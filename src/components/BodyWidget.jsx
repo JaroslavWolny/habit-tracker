@@ -5,12 +5,13 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import './BodyWidget.css';
 
-// --- HOLOGRAPHIC SHADERS ---
+// --- OPTIMIZED HOLOGRAPHIC SHADERS ---
 
 const vertexShader = `
   uniform float uTime;
   uniform float uIntegrity;
   uniform float uHover;
+  uniform float uPulse; // Shockwave effect (0.0 to 1.0)
   
   attribute float aRandom;
   
@@ -74,32 +75,31 @@ const vertexShader = `
     vPos = pos;
 
     // Glitch / Noise Effect based on Integrity
-    // Lower integrity = More noise amplitude
-    float glitchAmt = (1.0 - uIntegrity) * 0.5; 
+    float glitchAmt = (1.0 - uIntegrity) * 0.3; // Reduced amplitude for performance
     
-    // High frequency noise for "static"
-    float staticNoise = snoise(vec3(pos.x * 10.0, pos.y * 10.0, uTime * 5.0)) * glitchAmt * 0.1;
-    
-    // Low frequency noise for "drift"
+    // Simplified noise for performance
     float driftNoise = snoise(vec3(pos.x, pos.y, uTime * 0.5)) * glitchAmt;
 
-    pos.x += staticNoise + driftNoise;
-    pos.z += staticNoise + driftNoise;
+    pos.x += driftNoise;
+    pos.z += driftNoise;
+
+    // Pulse / Shockwave Effect
+    // Expands the particles momentarily when uPulse is high
+    pos *= 1.0 + (uPulse * 0.2 * sin(pos.y * 10.0 - uTime * 20.0));
 
     // Hover Excitement
     if (uHover > 0.5) {
-        pos *= 1.0 + (sin(uTime * 20.0) * 0.01);
+        pos *= 1.0 + (sin(uTime * 15.0) * 0.01);
     }
 
     vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
     gl_Position = projectionMatrix * mvPosition;
 
-    // Size: Bigger particles for better visibility
-    // Scale by integrity: Broken hologram has fuzzy, larger particles
-    gl_PointSize = (6.0 + (glitchAmt * 4.0)) * (1.0 / -mvPosition.z);
+    // Size: Optimized size calculation
+    gl_PointSize = (5.0 + (glitchAmt * 3.0)) * (1.0 / -mvPosition.z);
     
     // Alpha: Always keep some visibility
-    vAlpha = 0.6 + (uIntegrity * 0.4);
+    vAlpha = 0.6 + (uIntegrity * 0.4) + (uPulse * 0.5); // Pulse makes it brighter
   }
 `;
 
@@ -110,29 +110,25 @@ const fragmentShader = `
   varying vec3 vPos;
 
   void main() {
-    // 1. Circular Particle
+    // 1. Circular Particle (Optimized: No discard if possible, but needed for circle)
     vec2 coord = gl_PointCoord - vec2(0.5);
-    float dist = length(coord);
-    if (dist > 0.5) discard;
+    if (dot(coord, coord) > 0.25) discard; // Faster than length() > 0.5
 
     // 2. Hologram Scanlines
-    // Bands moving up the body
-    float scanline = sin(vPos.y * 20.0 - uTime * 5.0);
+    float scanline = sin(vPos.y * 15.0 - uTime * 3.0);
     float scanlineEffect = smoothstep(0.0, 1.0, scanline);
     
     // 3. Core Glow
-    float glow = 1.0 - (dist * 2.0);
-    glow = pow(glow, 2.0);
+    float glow = 1.0 - (length(coord) * 2.0);
 
     // Combine
-    // Add brightness to scanline peaks
-    vec3 finalColor = uColor + (vec3(1.0) * scanlineEffect * 0.5);
+    vec3 finalColor = uColor + (vec3(1.0) * scanlineEffect * 0.3);
     
     gl_FragColor = vec4(finalColor, vAlpha * glow);
   }
 `;
 
-// --- PARTICLE GENERATION (Dense Humanoid) ---
+// --- PARTICLE GENERATION (Optimized Count) ---
 const generateHologramParticles = (count) => {
     const positions = new Float32Array(count * 3);
     const randoms = new Float32Array(count);
@@ -186,35 +182,55 @@ const generateHologramParticles = (count) => {
 const HologramEntity = ({ stats }) => {
     const mesh = useRef();
     const [hovered, setHover] = useState(false);
+    const [pulse, setPulse] = useState(0);
 
     // Integrity Calculation
     const integrity = (stats.training + stats.nutrition + stats.recovery) / 3;
 
-    // Colors: Star Wars Hologram Blue (Default) -> Red (Critical) -> Green (Optimal)
-    const baseColor = new THREE.Color();
-    if (integrity > 0.8) baseColor.set('#39FF14'); // Optimal Green
-    else if (integrity > 0.3) baseColor.set('#00eaff'); // Hologram Cyan
-    else baseColor.set('#ff003c'); // Critical Red
+    // Trigger Pulse on stats change
+    useEffect(() => {
+        setPulse(1.0); // Spike pulse
+        const timer = setTimeout(() => setPulse(0), 500); // Decay
+        return () => clearTimeout(timer);
+    }, [integrity]);
 
-    // Generate 12,000 particles for high density
-    const particleCount = 12000;
+    // Colors
+    const baseColor = new THREE.Color();
+    if (integrity > 0.8) baseColor.set('#39FF14');
+    else if (integrity > 0.3) baseColor.set('#00eaff');
+    else baseColor.set('#ff003c');
+
+    // Optimized Particle Count: 4000 (Smooth on mobile)
+    const particleCount = 4000;
     const { positions, randoms } = useMemo(() => generateHologramParticles(particleCount), []);
 
     const uniforms = useMemo(() => ({
         uTime: { value: 0 },
         uIntegrity: { value: integrity },
         uColor: { value: baseColor },
-        uHover: { value: 0 }
+        uHover: { value: 0 },
+        uPulse: { value: 0 }
     }), []);
 
     useFrame((state) => {
         if (mesh.current) {
+            const dt = state.clock.getDelta();
             mesh.current.material.uniforms.uTime.value = state.clock.getElapsedTime();
+
+            // Smooth Interpolation
             mesh.current.material.uniforms.uIntegrity.value = THREE.MathUtils.lerp(
                 mesh.current.material.uniforms.uIntegrity.value,
                 integrity,
-                0.05
+                0.1
             );
+
+            // Pulse Decay
+            mesh.current.material.uniforms.uPulse.value = THREE.MathUtils.lerp(
+                mesh.current.material.uniforms.uPulse.value,
+                pulse,
+                0.1
+            );
+
             mesh.current.material.uniforms.uColor.value.lerp(baseColor, 0.05);
             mesh.current.material.uniforms.uHover.value = THREE.MathUtils.lerp(
                 mesh.current.material.uniforms.uHover.value,
@@ -222,8 +238,7 @@ const HologramEntity = ({ stats }) => {
                 0.1
             );
 
-            // Slow rotation
-            mesh.current.rotation.y = state.clock.getElapsedTime() * 0.1;
+            mesh.current.rotation.y += 0.005; // Slower, smoother rotation
         }
     });
 
@@ -258,7 +273,7 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
     }, [integrity]);
 
     return (
-        <div className="body-widget-container" style={{ height: '50vh', minHeight: '400px', width: '100%', position: 'relative' }}>
+        <div className="body-widget-container" style={{ height: '45vh', minHeight: '350px', width: '100%', position: 'relative' }}>
 
             {/* Holographic Chat Bubble */}
             <div className="cyber-chat-bubble">
@@ -266,17 +281,18 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
             </div>
 
             {/* 3D SCENE */}
-            <Canvas camera={{ position: [0, 0.5, 4.5], fov: 40 }} gl={{ antialias: false, alpha: true }}>
+            {/* Adjusted Camera: Further back (z: 6) to fit smaller avatar */}
+            <Canvas camera={{ position: [0, 0.5, 6], fov: 35 }} gl={{ antialias: false, alpha: true }}>
 
                 <HologramEntity stats={stats} />
 
-                {/* POST PROCESSING: BLOOM (The Glow) */}
+                {/* POST PROCESSING: BLOOM (Optimized) */}
                 <EffectComposer disableNormalPass>
                     <Bloom
-                        luminanceThreshold={0}
+                        luminanceThreshold={0.2} // Only bloom bright parts
                         mipmapBlur
-                        intensity={1.5}
-                        radius={0.6}
+                        intensity={1.0} // Reduced intensity
+                        radius={0.5}
                     />
                 </EffectComposer>
 

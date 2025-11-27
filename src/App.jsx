@@ -146,8 +146,9 @@ function App() {
       let shouldTriggerCard = false;
 
       if (isCompleted) {
-        newTodayCompleted = todayCompleted.filter(hId => hId !== id);
-        triggerHaptic('light');
+        // STRICT MODE: Cannot undo a completed habit for the day
+        triggerHaptic('medium'); // Error vibration
+        return prev;
       } else {
         newTodayCompleted = [...todayCompleted, id];
         triggerHaptic('success');
