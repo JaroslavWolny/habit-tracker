@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-// import { useDrag } from '@use-gesture/react'; // Temporarily disabled
+import { motion, AnimatePresence } from 'framer-motion';
 import './BodyWidget.css';
 
 // --- SVG PATHS ---
@@ -37,17 +36,19 @@ const PATHS = {
 
 // --- SUB-COMPONENTS ---
 
-const ChatBubble = ({ status, level }) => {
+const ChatBubble = ({ status }) => {
     const [text, setText] = useState("");
+
+    // Memoize the target text to prevent unnecessary re-calculations
     const fullText = useMemo(() => {
-        if (status === 'critical') return "SYSTEM CRITICAL. INTEGRITY FAILING.";
+        if (status === 'critical') return "SYSTEM CRITICAL. FEED ME DATA.";
         if (status === 'god') return "I AM EFFICIENT. I AM UNSTOPPABLE.";
         return "SYSTEM ONLINE. AWAITING INPUT.";
     }, [status]);
 
     useEffect(() => {
         let i = 0;
-        setText("");
+        setText(""); // Reset text on status change
         const interval = setInterval(() => {
             setText(fullText.slice(0, i + 1));
             i++;
@@ -61,7 +62,7 @@ const ChatBubble = ({ status, level }) => {
             className="chat-bubble"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            key={status}
+            key={status} // Remount on status change
         >
             <div className="chat-text">{text}<span className="cursor-blink">_</span></div>
             <div className="chat-line"></div>
@@ -69,27 +70,16 @@ const ChatBubble = ({ status, level }) => {
     );
 };
 
+// Simplified AvatarConstruct - Purely presentational, no definitions
 const AvatarConstruct = ({ stats, statusColor, isCritical, isOptimal, showMuscles, showArmor, onPartTap, isGhost = false }) => {
     return (
         <svg viewBox="0 0 200 400" className="body-svg" style={{ opacity: isGhost ? 0.3 : 1 }}>
-            <defs>
-                <filter id="plasma-flow">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
-                    {/* Removed animate tag to prevent React crashes */}
-                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
-                </filter>
-                <pattern id="hex-mesh-organic" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-                    <path d="M4 0 L8 2 L8 6 L4 8 L0 6 L0 2 Z" fill="none" stroke={statusColor} strokeWidth="0.5" opacity="0.3" />
-                    <rect width="8" height="8" fill={statusColor} opacity="0.1" />
-                </pattern>
-            </defs>
-
             {/* SKELETON */}
             <g stroke={isGhost ? statusColor : "#333"} strokeWidth="2" fill="none">
                 {Object.values(PATHS.skeleton).map((d, i) => <path key={i} d={d} />)}
             </g>
 
-            {/* MUSCLES (With Plasma Filter) */}
+            {/* MUSCLES */}
             {showMuscles && (
                 <g filter={isOptimal ? "url(#plasma-flow)" : "none"}>
                     {Object.entries(PATHS.muscles).map(([key, d]) => (
@@ -100,8 +90,8 @@ const AvatarConstruct = ({ stats, statusColor, isCritical, isOptimal, showMuscle
                             stroke={isGhost ? statusColor : "none"}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            onClick={() => !isGhost && onPartTap(key, Math.round(stats.training * 100))}
-                            style={{ cursor: 'pointer' }}
+                            onClick={() => !isGhost && onPartTap && onPartTap(key, Math.round((stats.training || 0) * 100))}
+                            style={{ cursor: isGhost ? 'default' : 'pointer' }}
                         />
                     ))}
                 </g>
@@ -120,8 +110,8 @@ const AvatarConstruct = ({ stats, statusColor, isCritical, isOptimal, showMuscle
                             strokeWidth="1"
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            onClick={() => !isGhost && onPartTap(key, 100)}
-                            style={{ cursor: 'pointer' }}
+                            onClick={() => !isGhost && onPartTap && onPartTap(key, 100)}
+                            style={{ cursor: isGhost ? 'default' : 'pointer' }}
                         />
                     ))}
                 </g>
@@ -138,18 +128,17 @@ const AvatarConstruct = ({ stats, statusColor, isCritical, isOptimal, showMuscle
 };
 
 const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
-    // Safety check
+    // 1. Safety Check: Ensure stats object exists
     if (!stats) return null;
 
     // --- STATE ---
     const [activePart, setActivePart] = useState(null);
-    // const [dirtLevel, setDirtLevel] = useState(stats.training < 0.3 ? 1 : 0); // Disabled for safety
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const containerRef = useRef(null);
 
     // --- DERIVED STATE ---
-    const isCritical = stats.training < 0.3 || stats.nutrition < 0.3 || stats.recovery < 0.3;
-    const isOptimal = stats.training > 0.8 && stats.nutrition > 0.8 && stats.recovery > 0.8;
+    const isCritical = (stats.training < 0.3 || stats.nutrition < 0.3 || stats.recovery < 0.3);
+    const isOptimal = (stats.training > 0.8 && stats.nutrition > 0.8 && stats.recovery > 0.8);
     const isGodMode = isAllDone && streak > 7;
     const userLevel = Math.max(1, streak);
     const showMuscles = userLevel >= 5 || isGodMode;
@@ -159,15 +148,14 @@ const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
     const statusType = isGodMode ? 'god' : (isCritical ? 'critical' : 'normal');
 
     // --- ANIMATIONS ---
-    const floatAnim = {
+    // Combined animation object to prevent prop conflict
+    const mainAnim = {
         y: isCritical ? [0, 2, -2, 0] : [-5, 5, -5],
-        transition: { duration: isCritical ? 0.2 : 6, repeat: Infinity, ease: "easeInOut" }
-    };
-
-    // Heartbeat Effect (Global Pulse)
-    const heartbeat = {
-        scale: [1, 1.02, 1],
-        transition: { duration: 1, repeat: Infinity, ease: "easeInOut" } // 60 BPM
+        scale: [1, 1.02, 1], // Heartbeat
+        transition: {
+            y: { duration: isCritical ? 0.2 : 6, repeat: Infinity, ease: "easeInOut" },
+            scale: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+        }
     };
 
     // --- INTERACTION ---
@@ -185,73 +173,57 @@ const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
         setTimeout(() => setActivePart(null), 3000);
     };
 
-    // Cleaning Gesture - Disabled for safety
-    /*
-    const bindClean = useDrag(({ movement: [mx, my], velocity: [vx, vy], down }) => {
-        if (down && dirtLevel > 0) {
-            const speed = Math.abs(vx) + Math.abs(vy);
-            if (speed > 0.5) {
-                setDirtLevel(prev => Math.max(0, prev - 0.02));
-                if (navigator.vibrate && Math.random() > 0.7) navigator.vibrate(5);
-            }
-        }
-    });
-    */
-
     return (
         <div
             className={`body-widget-container ${isCritical ? 'status-critical' : ''} ${isOptimal ? 'status-optimal' : ''}`}
             ref={containerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
-            // {...bindClean()} 
             style={{ touchAction: 'none' }}
         >
+            {/* GLOBAL SVG DEFINITIONS (Defined once here) */}
+            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                <defs>
+                    <filter id="plasma-flow">
+                        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
+                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
+                    </filter>
+                    <pattern id="hex-mesh-organic" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <path d="M4 0 L8 2 L8 6 L4 8 L0 6 L0 2 Z" fill="none" stroke={statusColor} strokeWidth="0.5" opacity="0.3" />
+                        <rect width="8" height="8" fill={statusColor} opacity="0.1" />
+                    </pattern>
+                </defs>
+            </svg>
+
             {/* Backgrounds */}
             <div className="medical-grid-bg" />
             {isOptimal && <div className="particles-container" />}
 
             {/* Chat Bubble */}
-            <ChatBubble status={statusType} level={userLevel} />
-
-            {/* Ghost Trails (Motion Blur) */}
-            {isOptimal && (
-                <>
-                    <motion.div className="body-silhouette-wrapper ghost-layer" animate={floatAnim} style={{ opacity: 0.3, filter: 'blur(2px)', transform: 'translate(-5px, 0)' }}>
-                        <AvatarConstruct {...{ stats, statusColor, isCritical, isOptimal, showMuscles, showArmor, onPartTap }} isGhost={true} />
-                    </motion.div>
-                    <motion.div className="body-silhouette-wrapper ghost-layer" animate={floatAnim} style={{ opacity: 0.2, filter: 'blur(4px)', transform: 'translate(5px, 0)' }}>
-                        <AvatarConstruct {...{ stats, statusColor, isCritical, isOptimal, showMuscles, showArmor, onPartTap }} isGhost={true} />
-                    </motion.div>
-                </>
-            )}
+            <ChatBubble status={statusType} />
 
             {/* Main Avatar */}
             <motion.div
                 className="body-silhouette-wrapper"
-                animate={{ ...floatAnim, ...heartbeat }}
+                animate={mainAnim}
             >
-                <AvatarConstruct {...{ stats, statusColor, isCritical, isOptimal, showMuscles, showArmor, onPartTap }} />
+                <AvatarConstruct
+                    stats={stats}
+                    statusColor={statusColor}
+                    isCritical={isCritical}
+                    isOptimal={isOptimal}
+                    showMuscles={showMuscles}
+                    showArmor={showArmor}
+                    onPartTap={handlePartTap}
+                />
             </motion.div>
-
-            {/* Dirt Overlay (Cleaning Mechanic) - Disabled */}
-            {/*
-            {dirtLevel > 0 && (
-                <div 
-                    className="dirt-overlay" 
-                    style={{ opacity: dirtLevel }}
-                >
-                    <div className="dirt-noise"></div>
-                    <div className="clean-hint">SWIPE TO CLEAN SYSTEM</div>
-                </div>
-            )}
-            */}
 
             {/* Diagnostic Overlay */}
             <AnimatePresence>
                 {activePart && (
                     <motion.div
                         className="diagnostic-overlay"
+                        key="overlay" // CRITICAL: Key required for AnimatePresence
                         initial={{ opacity: 0, y: 20, x: "-50%" }}
                         animate={{ opacity: 1, y: 0, x: "-50%" }}
                         exit={{ opacity: 0, y: 10, x: "-50%" }}
