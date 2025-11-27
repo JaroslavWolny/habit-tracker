@@ -23,10 +23,15 @@ As you complete habits, your cybernetic avatar **glows, pulses, and evolves** in
 
 ## 🔥 KEY FEATURES
 
-### 🤖 Cybernetic Body Widget
-- **Real-time Visualization:** Watch your avatar's muscles, core, and brain light up as you complete tasks.
-- **Scanline Diagnostics:** Futuristic scanning animations give you immediate feedback on your system status.
-- **Dynamic Stats:** Track your SYSTEM, FUEL, and ENERGY levels with precision.
+### 🤖 Cybernetic Body Widget (v2.0)
+- **Tactical Touch & Scan:** Interact with your avatar. Tap on muscles, armor, or core to trigger a haptic diagnostic scan.
+- **Diagnostic Overlay:** A futuristic, dynamic status bar appears to report system integrity percentages in real-time.
+- **Visual Feedback:** Watch your avatar's muscles, core, and brain light up as you complete tasks. Inactive sectors remain dimmed until engaged.
+
+### ☢️ Power Grid Stats
+- **Reactor Core Design:** Replace boring progress bars with high-tech circular reactor charts.
+- **Monospace Precision:** Large, readable data displays for STR (Strength), REC (Recovery), and KNOW (Knowledge).
+- **Responsive Grid:** Automatically adapts to any device, ensuring your data is always visible and never obscured.
 
 ### ⚔️ SHARE DOMINANCE (Proof of Work)
 - **Broadcast Status:** Generate high-fidelity, Instagram-ready "Proof of Work" cards.

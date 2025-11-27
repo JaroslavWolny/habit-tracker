@@ -35,7 +35,7 @@ const PATHS = {
 
 const BodyWidget = ({ stats, isAllDone = false }) => {
     // stats: { training: 0-1, nutrition: 0-1, recovery: 0-1, know: 0-100 }
-    const [hoveredPart, setHoveredPart] = useState(null);
+    const [activePart, setActivePart] = useState(null); // Changed from hoveredPart
     const [scanLine, setScanLine] = useState(false);
 
     // Normalize knowledge if it's 0-100
@@ -56,25 +56,23 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
 
     const reactor = getReactorStatus(stats.nutrition);
 
+    const handlePartInteraction = (partName, value) => {
+        // 1. Haptic feedback
+        if (navigator.vibrate) navigator.vibrate(15);
+
+        // 2. Set active part
+        setActivePart({ name: partName, value: value });
+
+        // 3. Reset after 3 seconds
+        setTimeout(() => setActivePart(null), 3000);
+    };
+
     const handleClick = () => {
         setScanLine(true);
-        // Play sound here if possible
         setTimeout(() => setScanLine(false), 2000);
     };
 
     // --- SUB-COMPONENTS ---
-    const Tooltip = ({ x, y, text }) => (
-        <motion.div
-            className="body-tooltip"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            style={{ left: x, top: y }}
-        >
-            {text}
-        </motion.div>
-    );
-
     const AvatarLayer = ({ isGhost = false, offset = { x: 0, y: 0 }, colorOverride = null }) => (
         <svg viewBox="0 0 200 400" className="body-svg" style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}>
             <defs>
@@ -122,9 +120,16 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                         d={d}
                         fill={colorOverride || "url(#hex-mesh)"}
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.1 + (stats.training * 0.8) }}
-                        onMouseEnter={(e) => setHoveredPart({ x: e.clientX, y: e.clientY - 40, text: `Muscles: ${Math.round(stats.training * 100)}%` })}
-                        onMouseLeave={() => setHoveredPart(null)}
+                        animate={{
+                            opacity: activePart && activePart.name !== "MUSCLE DENSITY" ? 0.2 : 0.1 + (stats.training * 0.8),
+                            stroke: activePart?.name === "MUSCLE DENSITY" ? (isGodMode ? "#FFF" : "var(--primary)") : "none",
+                            strokeWidth: activePart?.name === "MUSCLE DENSITY" ? 2 : 0
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            handlePartInteraction("MUSCLE DENSITY", Math.round(stats.training * 100));
+                        }}
+                        style={{ cursor: 'pointer' }}
                     />
                 ))}
             </g>
@@ -137,11 +142,18 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                             key={key}
                             d={d}
                             initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: isGodMode ? 0.9 : 0.4 + (stats.training * 0.4) }}
+                            animate={{
+                                scale: 1,
+                                opacity: activePart && activePart.name !== "ARMOR INTEGRITY" ? 0.2 : (isGodMode ? 0.9 : 0.4 + (stats.training * 0.4)),
+                                stroke: activePart?.name === "ARMOR INTEGRITY" ? "#FFF" : (isGodMode ? "#FFF" : "none"),
+                                strokeWidth: activePart?.name === "ARMOR INTEGRITY" ? 2 : 1
+                            }}
                             transition={{ duration: 0.5 }}
-                            style={{ filter: isGodMode ? "url(#glow-strong)" : "none" }}
-                            onMouseEnter={(e) => setHoveredPart({ x: e.clientX, y: e.clientY - 40, text: `Armor: ${isGodMode ? 'GOD' : 'Active'}` })}
-                            onMouseLeave={() => setHoveredPart(null)}
+                            style={{ filter: isGodMode ? "url(#glow-strong)" : "none", cursor: 'pointer' }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handlePartInteraction("ARMOR INTEGRITY", isGodMode ? 100 : Math.round(stats.training * 100));
+                            }}
                         />
                     ))}
                 </g>
@@ -153,9 +165,11 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                 fill={reactor.color}
                 animate={reactor.animate}
                 transition={{ duration: reactor.t, repeat: Infinity }}
-                style={{ filter: `drop-shadow(0 0 ${isGodMode ? 20 : 10}px ${reactor.glow})` }}
-                onMouseEnter={(e) => setHoveredPart({ x: e.clientX, y: e.clientY - 40, text: `Core: ${Math.round(stats.nutrition * 100)}%` })}
-                onMouseLeave={() => setHoveredPart(null)}
+                style={{ filter: `drop-shadow(0 0 ${isGodMode ? 20 : 10}px ${reactor.glow})`, cursor: 'pointer' }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handlePartInteraction("CORE REACTOR", Math.round(stats.nutrition * 100));
+                }}
             />
 
             {/* 6. DATA HALO (Knowledge) */}
@@ -171,7 +185,11 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                     rotateZ: [0, 360]
                 }}
                 transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                style={{ filter: `drop-shadow(0 0 5px ${isGodMode ? "#00FFFF" : "var(--primary)"})` }}
+                style={{ filter: `drop-shadow(0 0 5px ${isGodMode ? "#00FFFF" : "var(--primary)"})`, cursor: 'pointer' }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handlePartInteraction("NEURAL LINK", Math.round(knowledgeLevel * 100));
+                }}
             />
 
             {/* 7. ENERGY SHIELD (Recovery) */}
@@ -183,13 +201,19 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                 strokeDasharray="20 40"
                 initial={{ opacity: 0 }}
                 animate={{
-                    opacity: stats.recovery * 0.5,
+                    opacity: activePart && activePart.name !== "ENERGY SHIELD" ? 0.1 : stats.recovery * 0.5,
                     scale: [1, 1.02, 1],
-                    rotate: 360
+                    rotate: 360,
+                    stroke: activePart?.name === "ENERGY SHIELD" ? "#FFF" : (isGodMode ? "#FFF" : "var(--primary)")
                 }}
                 transition={{
                     rotate: { duration: 20, repeat: Infinity, ease: "linear" },
                     scale: { duration: 2, repeat: Infinity }
+                }}
+                style={{ cursor: 'pointer' }}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handlePartInteraction("ENERGY SHIELD", Math.round(stats.recovery * 100));
                 }}
             />
 
@@ -238,10 +262,20 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                 <AvatarLayer />
             </motion.div>
 
-            {/* Tooltip Portal */}
+            {/* Diagnostic Overlay (Dynamic Status Bar) */}
             <AnimatePresence>
-                {hoveredPart && (
-                    <Tooltip x={hoveredPart.x} y={hoveredPart.y} text={hoveredPart.text} />
+                {activePart && (
+                    <motion.div
+                        className="diagnostic-overlay"
+                        initial={{ opacity: 0, y: 20, x: "-50%" }}
+                        animate={{ opacity: 1, y: 0, x: "-50%" }}
+                        exit={{ opacity: 0, y: 10, x: "-50%" }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <div className="diag-header">SCANNING: <span style={{ color: 'var(--primary)' }}>{activePart.name}</span></div>
+                        <div className="diag-value">INTEGRITY: {activePart.value}%</div>
+                        <div className="scan-line-anim"></div>
+                    </motion.div>
                 )}
             </AnimatePresence>
         </div>

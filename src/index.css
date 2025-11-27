@@ -248,7 +248,7 @@ body,
 
 /* Adjust main panel to not be hidden by fixed button */
 .main-panel {
-  padding-bottom: 100px !important;
+  padding-bottom: 140px !important;
 }
 
 /* Side Panel - Hide on mobile by default */
