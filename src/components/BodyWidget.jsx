@@ -1,15 +1,13 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, Capsule, Cylinder, useCursor } from '@react-three/drei';
-import { EffectComposer, Bloom, Noise, Vignette } from '@react-three/postprocessing';
+import { OrbitControls, Sphere, Capsule, Cylinder } from '@react-three/drei';
+// import { EffectComposer, Bloom, Noise, Vignette } from '@react-three/postprocessing'; // Temporarily disabled
 import * as THREE from 'three';
 import './BodyWidget.css';
 
 // --- 3D AVATAR COMPONENT ---
 const HologramAvatar = ({ stats, statusColor, isCritical, isGodMode }) => {
     const group = useRef();
-    const [hovered, setHover] = useState(false);
-    useCursor(hovered);
 
     // Breathing & Floating Animation
     useFrame((state) => {
@@ -25,49 +23,44 @@ const HologramAvatar = ({ stats, statusColor, isCritical, isGodMode }) => {
         }
     });
 
-    // Material for the Hologram
+    // Material for the Hologram (Simplified for debugging)
     const materialProps = useMemo(() => ({
-        color: "#000000",
+        color: statusColor, // Use direct color for visibility
         emissive: statusColor,
-        emissiveIntensity: isGodMode ? 2 : (isCritical ? 3 : 1.5),
+        emissiveIntensity: 0.5,
         roughness: 0.2,
         metalness: 0.8,
-        wireframe: false,
+        wireframe: true, // Wireframe is often safer/cooler for holograms
         transparent: true,
-        opacity: 0.9,
-    }), [statusColor, isCritical, isGodMode]);
+        opacity: 0.8,
+    }), [statusColor]);
 
     return (
-        <group ref={group} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+        <group ref={group}>
             {/* HEAD */}
-            <Sphere args={[0.35, 32, 32]} position={[0, 1.6, 0]}>
+            <Sphere args={[0.35, 16, 16]} position={[0, 1.6, 0]}>
                 <meshStandardMaterial {...materialProps} />
             </Sphere>
-            {/* Eyes (Visor) */}
-            <Box args={[0.4, 0.1, 0.2]} position={[0, 1.6, 0.25]}>
-                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
-            </Box>
 
             {/* TORSO */}
-            <Cylinder args={[0.3, 0.2, 1, 32]} position={[0, 0.9, 0]}>
+            <Cylinder args={[0.3, 0.2, 1, 16]} position={[0, 0.9, 0]}>
                 <meshStandardMaterial {...materialProps} />
             </Cylinder>
 
             {/* CORE REACTOR */}
-            <Sphere args={[0.15, 32, 32]} position={[0, 1.0, 0.25]}>
+            <Sphere args={[0.15, 16, 16]} position={[0, 1.0, 0.25]}>
                 <meshStandardMaterial
-                    color={statusColor}
+                    color="#ffffff"
                     emissive={statusColor}
-                    emissiveIntensity={3}
-                    toneMapped={false}
+                    emissiveIntensity={1}
                 />
             </Sphere>
 
             {/* SHOULDERS */}
-            <Sphere args={[0.25, 32, 32]} position={[-0.5, 1.3, 0]}>
+            <Sphere args={[0.25, 16, 16]} position={[-0.5, 1.3, 0]}>
                 <meshStandardMaterial {...materialProps} />
             </Sphere>
-            <Sphere args={[0.25, 32, 32]} position={[0.5, 1.3, 0]}>
+            <Sphere args={[0.25, 16, 16]} position={[0.5, 1.3, 0]}>
                 <meshStandardMaterial {...materialProps} />
             </Sphere>
 
@@ -80,7 +73,7 @@ const HologramAvatar = ({ stats, statusColor, isCritical, isGodMode }) => {
             </Capsule>
 
             {/* HIPS */}
-            <Cylinder args={[0.2, 0.25, 0.4, 32]} position={[0, 0.2, 0]}>
+            <Cylinder args={[0.2, 0.25, 0.4, 16]} position={[0, 0.2, 0]}>
                 <meshStandardMaterial {...materialProps} />
             </Cylinder>
 
@@ -94,17 +87,6 @@ const HologramAvatar = ({ stats, statusColor, isCritical, isGodMode }) => {
         </group>
     );
 };
-
-// Helper for Box geometry since 'Box' isn't exported directly sometimes
-const Box = (props) => {
-    return (
-        <mesh {...props}>
-            <boxGeometry args={props.args} />
-            {props.children}
-        </mesh>
-    )
-}
-
 
 const BodyWidget = ({ stats, userLevel = 1 }) => {
     if (!stats) return null;
@@ -133,14 +115,14 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
             </div>
 
             {/* 3D SCENE */}
-            <Canvas camera={{ position: [0, 0, 4.5], fov: 45 }} gl={{ antialias: false }}>
-                <color attach="background" args={['#050505']} />
-                <fog attach="fog" args={['#050505', 5, 15]} />
+            <Canvas camera={{ position: [0, 0, 5], fov: 50 }} gl={{ antialias: true }}>
+                {/* Background Color to verify Canvas is rendering */}
+                <color attach="background" args={['#111']} />
 
                 {/* LIGHTING */}
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={1} color={statusColor} />
-                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#0000ff" />
+                <ambientLight intensity={1} />
+                <pointLight position={[10, 10, 10]} intensity={2} color={statusColor} />
+                <pointLight position={[-10, -10, -10]} intensity={1} color="blue" />
 
                 {/* AVATAR */}
                 <HologramAvatar
@@ -150,21 +132,12 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
                     isGodMode={isGodMode}
                 />
 
-                {/* POST PROCESSING (The Glow) */}
-                <EffectComposer disableNormalPass>
-                    <Bloom luminanceThreshold={0} mipmapBlur intensity={1.5} radius={0.6} />
-                    <Noise opacity={0.05} />
-                    <Vignette eskil={false} offset={0.1} darkness={1.1} />
-                </EffectComposer>
-
                 {/* CONTROLS */}
                 <OrbitControls
                     enableZoom={false}
                     enablePan={false}
-                    minPolarAngle={Math.PI / 2.5}
-                    maxPolarAngle={Math.PI / 1.5}
                     autoRotate={true}
-                    autoRotateSpeed={0.5}
+                    autoRotateSpeed={1}
                 />
             </Canvas>
 
