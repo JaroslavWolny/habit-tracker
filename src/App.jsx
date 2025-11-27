@@ -7,7 +7,7 @@ import Calendar from './components/Calendar';
 import Award from './components/Award';
 import ShareCard from './components/ShareCard';
 import BodyWidget from './components/BodyWidget';
-import PerformanceStats from './components/PerformanceStats';
+
 import KnowledgeCardModal from './components/KnowledgeCardModal';
 
 function App() {
@@ -281,7 +281,7 @@ function App() {
       <div className="glass-panel main-panel">
 
         <BodyWidget stats={currentStats} isAllDone={isAllDone} />
-        <PerformanceStats stats={currentStats} />
+
 
         <AddHabit onAdd={addHabit} />
         <HabitList

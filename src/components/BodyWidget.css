@@ -1,54 +1,122 @@
-.body-widget-container {
+.bio-monitor-container {
     position: relative;
     width: 100%;
+    height: 55vh;
+    /* Taller to fit avatar + stats */
+    min-height: 450px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-bottom: 0;
-    /* Canvas handles spacing */
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     overflow: hidden;
-    /* Contain the 3D scene */
+    background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
     border-radius: 20px;
-    /* Rounded corners for the 'viewport' look */
-    background: #000;
-    /* Fallback */
     box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
-    /* Inner shadow for depth */
 }
 
-/* Chat Bubble */
-.cyber-chat-bubble {
+/* LAYERS */
+.avatar-layer {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid var(--primary);
-    padding: 8px 12px;
-    border-radius: 8px;
-    max-width: 160px;
-    z-index: 20;
-    backdrop-filter: blur(4px);
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
 }
 
-.typing-text {
+.cable-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+    /* Let clicks pass through to avatar */
+}
+
+.turbine-layer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-end;
+    padding: 0 20px;
+    z-index: 10;
+}
+
+/* TURBINE GAUGE */
+.turbine-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.turbine-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 4px dashed transparent;
+    /* Dashed for segmented look */
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.turbine-inner {
+    position: absolute;
+    width: 70%;
+    height: 70%;
+    border: 1px solid;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+}
+
+.turbine-value {
     font-family: 'Courier New', monospace;
-    font-size: 0.7rem;
-    color: var(--primary);
-    line-height: 1.4;
-    text-transform: uppercase;
+    font-size: 0.9rem;
     font-weight: bold;
-    text-shadow: 0 0 5px var(--primary);
+}
+
+.turbine-label {
+    font-family: 'Courier New', monospace;
+    font-size: 0.6rem;
+    color: #888;
+    letter-spacing: 1px;
+}
+
+.turbine-warning {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    border: 2px solid red;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* CABLES */
+.energy-cable-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
 }
 
 /* Level Badge */
 .level-badge {
     position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 20px;
+    left: 20px;
     background: rgba(17, 17, 17, 0.8);
     color: #fff;
     border: 1px solid var(--primary);
