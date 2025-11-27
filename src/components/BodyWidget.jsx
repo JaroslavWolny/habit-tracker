@@ -1,205 +1,318 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, Capsule, Cylinder, Box, RoundedBox, Environment, ContactShadows } from '@react-three/drei';
-import { motion } from 'framer-motion';
+import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import './BodyWidget.css';
 
-// --- 2D UI COMPONENTS (TURBINES) ---
+// --- GLSL SHADERS ---
 
-const TurbineGauge = ({ label, value, color, onClick }) => {
-    // Speed: Lower value = Slower rotation (higher duration)
-    // 0% = 20s duration, 100% = 2s duration
-    const speed = 20 - (value * 18);
-    const isCritical = value < 0.3;
+const vertexShader = `
+  uniform float uTime;
+  uniform float uIntegrity; // 0.0 (broken) to 1.0 (perfect)
+  uniform vec3 uMouse;
+  uniform float uHover;
+  
+  attribute float aRandom;
+  attribute vec3 aTargetPos; // The "ideal" position for the particle
+  
+  varying float vAlpha;
+  varying vec3 vColor;
 
-    return (
-        <div className="turbine-container" onClick={onClick}>
-            {/* Rotating Ring */}
-            <motion.div
-                className="turbine-ring"
-                style={{ borderTopColor: color, borderRightColor: color }}
-                animate={{ rotate: 360 }}
-                transition={{ duration: speed, repeat: Infinity, ease: "linear" }}
-            />
-            {/* Inner Static Ring */}
-            <div className="turbine-inner" style={{ borderColor: `${color}40` }}>
-                <div className="turbine-value" style={{ color: color }}>
-                    {Math.round(value * 100)}%
-                </div>
-                <div className="turbine-label">{label}</div>
-            </div>
-            {/* Critical Warning */}
-            {isCritical && (
-                <motion.div
-                    className="turbine-warning"
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{ duration: 1, repeat: Infinity }}
-                />
-            )}
-        </div>
-    );
+  // Simplex noise function
+  vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+  vec4 permute(vec4 x) { return mod289(((x*34.0)+1.0)*x); }
+  vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+  float snoise(vec3 v) { 
+    const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+    const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+    vec3 i  = floor(v + dot(v, C.yyy) );
+    vec3 x0 = v - i + dot(i, C.xxx) ;
+    vec3 g = step(x0.yzx, x0.xyz);
+    vec3 l = 1.0 - g;
+    vec3 i1 = min( g.xyz, l.zxy );
+    vec3 i2 = max( g.xyz, l.zxy );
+    vec3 x1 = x0 - i1 + C.xxx;
+    vec3 x2 = x0 - i2 + C.yyy;
+    vec3 x3 = x0 - D.yyy;
+    i = mod289(i); 
+    vec4 p = permute( permute( permute( 
+              i.z + vec4(0.0, i1.z, i2.z, 1.0 ))
+            + i.y + vec4(0.0, i1.y, i2.y, 1.0 )) 
+            + i.x + vec4(0.0, i1.x, i2.x, 1.0 ));
+    float n_ = 0.142857142857; 
+    vec3  ns = n_ * D.wyz - D.xzx;
+    vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+    vec4 x_ = floor(j * ns.z);
+    vec4 y_ = floor(j - 7.0 * x_ );
+    vec4 x = x_ *ns.x + ns.yyyy;
+    vec4 y = y_ *ns.x + ns.yyyy;
+    vec4 h = 1.0 - abs(x) - abs(y);
+    vec4 b0 = vec4( x.xy, y.xy );
+    vec4 b1 = vec4( x.zw, y.zw );
+    vec4 s0 = floor(b0)*2.0 + 1.0;
+    vec4 s1 = floor(b1)*2.0 + 1.0;
+    vec4 sh = -step(h, vec4(0.0));
+    vec4 a0 = b0.xzyw + s0.xzyw*sh.xxyy ;
+    vec4 a1 = b1.xzyw + s1.xzyw*sh.zzww ;
+    vec3 p0 = vec3(a0.xy,h.x);
+    vec3 p1 = vec3(a0.zw,h.y);
+    vec3 p2 = vec3(a1.xy,h.z);
+    vec3 p3 = vec3(a1.zw,h.w);
+    vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2, p2), dot(p3,p3)));
+    p0 *= norm.x;
+    p1 *= norm.y;
+    p2 *= norm.z;
+    p3 *= norm.w;
+    vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+    m = m * m;
+    return 42.0 * dot( m*m, vec4( dot(p0,x0), dot(p1,x1), 
+                                  dot(p2,x2), dot(p3,x3) ) );
+  }
+
+  void main() {
+    // 1. Base Position (The ideal shape)
+    vec3 pos = position;
+    
+    // 2. Entropy / Decay Effect
+    // If integrity is low, particles drift away based on noise
+    float decay = (1.0 - uIntegrity) * 2.0; // 0.0 to 2.0 strength
+    float noiseVal = snoise(vec3(pos.x * 2.0, pos.y * 2.0, uTime * 0.5));
+    
+    // Drift direction
+    vec3 drift = vec3(
+        snoise(vec3(pos.x, uTime, 0.0)),
+        snoise(vec3(pos.y, uTime, 1.0)),
+        snoise(vec3(pos.z, uTime, 2.0))
+    ) * decay * 0.5;
+
+    // Apply drift
+    pos += drift;
+
+    // 3. Breathing / Pulse
+    // Organic expansion/contraction
+    float breath = sin(uTime * 2.0) * 0.02 * uIntegrity;
+    pos *= (1.0 + breath);
+
+    // 4. Mouse Interaction (Magnetism)
+    // Calculate distance to mouse ray (simplified as a point in 3D space for now)
+    // In a real raycaster scenario, we'd project mouse to world. 
+    // Here we use a simplified "hover" effect passed from JS.
+    if (uHover > 0.5) {
+        // Jitter towards center when hovered (excitement)
+        pos += vec3(
+            sin(uTime * 10.0 + pos.y) * 0.02,
+            cos(uTime * 10.0 + pos.x) * 0.02,
+            0.0
+        );
+    }
+
+    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+
+    // Size depends on distance and random factor
+    gl_PointSize = (4.0 * aRandom + 2.0) * (1.0 / -mvPosition.z);
+    
+    // Pass alpha to fragment
+    // Particles fade out if they drift too far (low integrity)
+    vAlpha = 0.5 + (uIntegrity * 0.5) + (noiseVal * 0.2);
+  }
+`;
+
+const fragmentShader = `
+  uniform vec3 uColor;
+  varying float vAlpha;
+
+  void main() {
+    // Circular particle shape
+    vec2 coord = gl_PointCoord - vec2(0.5);
+    float dist = length(coord);
+    if (dist > 0.5) discard;
+
+    // Glow effect (radial gradient)
+    float strength = 1.0 - (dist * 2.0);
+    strength = pow(strength, 1.5);
+
+    gl_FragColor = vec4(uColor, vAlpha * strength);
+  }
+`;
+
+// --- PARTICLE GENERATION ---
+// Generates a humanoid point cloud procedurally
+const generateBodyParticles = (count) => {
+    const positions = new Float32Array(count * 3);
+    const randoms = new Float32Array(count);
+
+    for (let i = 0; i < count; i++) {
+        let x, y, z;
+        const r = Math.random();
+
+        // Simple distribution logic to form a body
+        if (r < 0.15) {
+            // HEAD (Sphere)
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const rad = 0.25;
+            x = rad * Math.sin(phi) * Math.cos(theta);
+            y = 1.7 + rad * Math.sin(phi) * Math.sin(theta);
+            z = rad * Math.cos(phi);
+        } else if (r < 0.50) {
+            // TORSO (Cylinder-ish)
+            const theta = Math.random() * Math.PI * 2;
+            const rad = 0.25 + Math.random() * 0.1; // Width
+            const h = Math.random() * 1.0; // Height
+            x = rad * Math.cos(theta) * 0.8; // Flattened slightly
+            y = 0.7 + h;
+            z = rad * Math.sin(theta) * 0.5;
+        } else if (r < 0.75) {
+            // ARMS (Cylinders)
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const h = Math.random() * 1.2;
+            x = side * (0.4 + Math.random() * 0.15);
+            y = 1.5 - h;
+            z = (Math.random() - 0.5) * 0.2;
+        } else {
+            // LEGS (Cylinders)
+            const side = Math.random() > 0.5 ? 1 : -1;
+            const h = Math.random() * 1.5;
+            x = side * (0.2 + Math.random() * 0.1);
+            y = 0.7 - h;
+            z = (Math.random() - 0.5) * 0.25;
+        }
+
+        positions[i * 3] = x;
+        positions[i * 3 + 1] = y;
+        positions[i * 3 + 2] = z;
+        randoms[i] = Math.random();
+    }
+
+    return { positions, randoms };
 };
 
-const EnergyCable = ({ startX, startY, endX, endY, color, intensity }) => {
-    // Path definition
-    const controlY = endY + 50; // Curve control point
-    const d = `M ${startX} ${startY} C ${startX} ${controlY}, ${endX} ${controlY}, ${endX} ${endY}`;
+const LivingEssence = ({ stats }) => {
+    const mesh = useRef();
+    const [hovered, setHover] = useState(false);
 
-    return (
-        <svg className="energy-cable-svg">
-            {/* Background Path (Dim) */}
-            <path d={d} stroke={color} strokeWidth="2" strokeOpacity="0.2" fill="none" />
+    // Calculate Integrity (0-1)
+    const integrity = (stats.training + stats.nutrition + stats.recovery) / 3;
 
-            {/* Flowing Energy (Bright) */}
-            {intensity > 0 && (
-                <motion.path
-                    d={d}
-                    stroke={color}
-                    strokeWidth="2"
-                    fill="none"
-                    strokeDasharray="10, 20"
-                    animate={{ strokeDashoffset: [0, -30] }}
-                    transition={{ duration: 1 / (intensity + 0.1), repeat: Infinity, ease: "linear" }}
-                />
-            )}
-        </svg>
-    );
-};
+    // Determine Color based on state
+    const baseColor = new THREE.Color();
+    if (integrity > 0.8) baseColor.set('#39FF14'); // Neon Green
+    else if (integrity > 0.4) baseColor.set('#00ffff'); // Cyan
+    else baseColor.set('#ff003c'); // Red (Critical)
 
-// --- 3D AVATAR COMPONENTS ---
+    // Generate particles once
+    const particleCount = 3000;
+    const { positions, randoms } = useMemo(() => generateBodyParticles(particleCount), []);
 
-const MuscleGroup = ({ position, rotation, scale = [1, 1, 1], pump, baseSize, color, geometry = 'capsule', intensity = 0 }) => {
-    const growth = 1 + (pump * 0.3);
-    const finalScale = [scale[0] * growth, scale[1] * growth, scale[2] * growth];
+    // Shader Uniforms
+    const uniforms = useMemo(() => ({
+        uTime: { value: 0 },
+        uIntegrity: { value: integrity },
+        uColor: { value: baseColor },
+        uHover: { value: 0 },
+        uMouse: { value: new THREE.Vector3() }
+    }), []);
 
-    const Material = (
-        <meshPhysicalMaterial
-            color={intensity > 0 ? color : "#444444"}
-            roughness={0.4}
-            metalness={0.7}
-            clearcoat={0.5}
-            clearcoatRoughness={0.1}
-            emissive={color}
-            emissiveIntensity={intensity * 2}
-        />
-    );
-
-    if (geometry === 'box') return <group position={position} rotation={rotation} scale={finalScale}><RoundedBox args={baseSize} radius={0.05} smoothness={4}>{Material}</RoundedBox></group>;
-    if (geometry === 'sphere') return <group position={position} rotation={rotation} scale={finalScale}><Sphere args={[baseSize[0], 16, 16]}>{Material}</Sphere></group>;
-    return <group position={position} rotation={rotation} scale={finalScale}><Capsule args={[baseSize[0], baseSize[1], 8, 16]}>{Material}</Capsule></group>;
-};
-
-const SyntheticHuman = ({ stats, isCritical, isOverdrive }) => {
-    const group = useRef();
-
-    // Stats Normalization
-    const training = stats.training || 0;
-    const nutrition = stats.nutrition || 0;
-    const recovery = stats.recovery || 0;
-    const knowledge = (stats.know || 0) / 100;
-
-    // Colors
-    const colTraining = "#ff3333";
-    const colNutrition = "#39FF14";
-    const colRecovery = "#33ccff";
-    const colKnowledge = "#9D00FF";
-
+    // Animation Loop
     useFrame((state) => {
-        const t = state.clock.getElapsedTime();
-        if (group.current) {
-            // Base Animation
-            let yPos = -1.2 + Math.sin(t * 0.5) * 0.05;
-            let rotY = Math.sin(t * 0.2) * 0.15;
+        const { clock } = state;
+        if (mesh.current) {
+            mesh.current.material.uniforms.uTime.value = clock.getElapsedTime();
 
-            // Critical State: Shaking
-            if (isCritical) {
-                group.current.position.x = (Math.random() - 0.5) * 0.02;
-                group.current.position.z = (Math.random() - 0.5) * 0.02;
-            } else {
-                group.current.position.x = 0;
-                group.current.position.z = 0;
-            }
+            // Smoothly interpolate integrity changes
+            mesh.current.material.uniforms.uIntegrity.value = THREE.MathUtils.lerp(
+                mesh.current.material.uniforms.uIntegrity.value,
+                integrity,
+                0.05
+            );
 
-            // Overdrive State: Levitation
-            if (isOverdrive) {
-                yPos = -1.0 + Math.sin(t * 2) * 0.1; // Higher and faster float
-                rotY += t * 0.5; // Spin
-            }
+            // Smoothly interpolate color
+            mesh.current.material.uniforms.uColor.value.lerp(baseColor, 0.05);
 
-            group.current.position.y = yPos;
-            group.current.rotation.y = rotY;
+            // Hover effect
+            mesh.current.material.uniforms.uHover.value = THREE.MathUtils.lerp(
+                mesh.current.material.uniforms.uHover.value,
+                hovered ? 1.0 : 0.0,
+                0.1
+            );
+
+            // Rotate the whole entity slowly
+            mesh.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.1) * 0.2;
         }
     });
 
     return (
-        <group ref={group}>
-            {/* Brain */}
-            <MuscleGroup position={[0, 1.75, 0]} baseSize={[0.22]} geometry="sphere" pump={0} color={colKnowledge} intensity={knowledge} />
-            {/* Core */}
-            <MuscleGroup position={[0, 1.1, 0.14]} scale={[1, 0.6, 0.3]} baseSize={[0.1]} geometry="sphere" pump={training} color={colNutrition} intensity={nutrition} />
-            {/* Spine */}
-            <MuscleGroup position={[0, 1.5, 0]} baseSize={[0.12, 0.3]} geometry="capsule" pump={training} color={colRecovery} intensity={recovery} />
-            {/* Muscles */}
-            <MuscleGroup position={[-0.55, 1.5, 0]} baseSize={[0.24]} geometry="sphere" pump={training} color={colTraining} intensity={training} />
-            <MuscleGroup position={[0.55, 1.5, 0]} baseSize={[0.24]} geometry="sphere" pump={training} color={colTraining} intensity={training} />
-            <MuscleGroup position={[-0.18, 1.35, 0.12]} scale={[1, 0.8, 0.5]} baseSize={[0.22]} geometry="sphere" pump={training} color={colTraining} intensity={training} />
-            <MuscleGroup position={[0.18, 1.35, 0.12]} scale={[1, 0.8, 0.5]} baseSize={[0.22]} geometry="sphere" pump={training} color={colTraining} intensity={training} />
-        </group>
+        <points
+            ref={mesh}
+            onPointerOver={() => setHover(true)}
+            onPointerOut={() => setHover(false)}
+        >
+            <bufferGeometry>
+                <bufferAttribute
+                    attach="attributes-position"
+                    count={particleCount}
+                    array={positions}
+                    itemSize={3}
+                />
+                <bufferAttribute
+                    attach="attributes-aRandom"
+                    count={particleCount}
+                    array={randoms}
+                    itemSize={1}
+                />
+            </bufferGeometry>
+            <shaderMaterial
+                vertexShader={vertexShader}
+                fragmentShader={fragmentShader}
+                uniforms={uniforms}
+                transparent={true}
+                depthWrite={false}
+                blending={THREE.AdditiveBlending}
+            />
+        </points>
     );
 };
 
 const BodyWidget = ({ stats, userLevel = 1 }) => {
     if (!stats) return null;
 
-    // Derived Stats
-    const str = stats.str / 100 || 0;
-    const rec = stats.rec / 100 || 0;
-    const know = stats.know / 100 || 0;
+    const integrity = (stats.training + stats.nutrition + stats.recovery) / 3;
+    const [message, setMessage] = useState("SYSTEM ONLINE");
 
-    const isCritical = str < 0.2 || rec < 0.2 || know < 0.2;
-    const isOverdrive = str > 0.9 && rec > 0.9 && know > 0.9;
-
-    // Colors
-    const colStr = "#ff3333";
-    const colRec = "#33ccff";
-    const colKnow = "#9D00FF";
+    useEffect(() => {
+        if (integrity < 0.3) setMessage("CRITICAL ENTROPY. STABILIZE.");
+        else if (integrity < 0.7) setMessage("SYSTEM STABLE.");
+        else setMessage("RESONANCE OPTIMAL.");
+    }, [integrity]);
 
     return (
-        <div className="bio-monitor-container">
+        <div className="body-widget-container" style={{ height: '50vh', minHeight: '400px', width: '100%', position: 'relative', overflow: 'visible' }}>
 
-            {/* 3D AVATAR LAYER */}
-            <div className="avatar-layer">
-                <Canvas camera={{ position: [0, 0.5, 5.5], fov: 35 }} gl={{ antialias: true, alpha: true }}>
-                    <Environment preset="city" />
-                    <ambientLight intensity={0.5} />
-                    <spotLight position={[0, 2, -5]} intensity={5} color="#ffffff" distance={10} /> {/* Rim Light */}
-                    <pointLight position={[5, 5, 5]} intensity={1} />
-
-                    <SyntheticHuman stats={stats} isCritical={isCritical} isOverdrive={isOverdrive} />
-
-                    <ContactShadows position={[0, -2, 0]} opacity={0.5} scale={10} blur={2.5} far={4} />
-                    <OrbitControls enableZoom={false} enablePan={false} autoRotate={!isCritical} autoRotateSpeed={0.8} />
-                </Canvas>
+            {/* Chat Bubble */}
+            <div className="cyber-chat-bubble" style={{ top: '10px', right: '10px', pointerEvents: 'none' }}>
+                <span className="typing-text">{message}</span>
             </div>
 
-            {/* CABLE LAYER (SVG Overlay) */}
-            <div className="cable-layer">
-                {/* Cables connecting bottom turbines to center chest (approx 50% width, 40% height) */}
-                <EnergyCable startX="15%" startY="100%" endX="50%" endY="40%" color={colStr} intensity={str} />
-                <EnergyCable startX="50%" startY="100%" endX="50%" endY="40%" color={colRec} intensity={rec} />
-                <EnergyCable startX="85%" startY="100%" endX="50%" endY="40%" color={colKnow} intensity={know} />
-            </div>
+            {/* 3D SCENE */}
+            <Canvas camera={{ position: [0, 0.5, 4], fov: 45 }} gl={{ antialias: true, alpha: true }}>
+                {/* No lights needed for shader particles, they emit their own color */}
 
-            {/* TURBINE GAUGE LAYER */}
-            <div className="turbine-layer">
-                <TurbineGauge label="STR" value={str} color={colStr} onClick={() => navigator.vibrate && navigator.vibrate(20)} />
-                <TurbineGauge label="REC" value={rec} color={colRec} onClick={() => navigator.vibrate && navigator.vibrate(20)} />
-                <TurbineGauge label="KNOW" value={know} color={colKnow} onClick={() => navigator.vibrate && navigator.vibrate(20)} />
-            </div>
+                <LivingEssence stats={stats} />
+
+                <OrbitControls
+                    enableZoom={false}
+                    enablePan={false}
+                    autoRotate={true}
+                    autoRotateSpeed={0.5}
+                    minPolarAngle={Math.PI / 2.5}
+                    maxPolarAngle={Math.PI / 1.5}
+                />
+            </Canvas>
 
             {/* Level Badge */}
-            <div className="level-badge">LVL {userLevel}</div>
+            <div className="level-badge" style={{ bottom: '10px' }}>LVL {userLevel}</div>
         </div>
     );
 };
