@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@use-gesture/react": "^10.3.1",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.23.24",
+    "howler": "^2.2.4",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.554.0",
     "qrcode.react": "^4.2.0",
