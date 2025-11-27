@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-import { useDrag } from '@use-gesture/react';
+// import { useDrag } from '@use-gesture/react'; // Temporarily disabled
 import './BodyWidget.css';
 
 // --- SVG PATHS ---
@@ -40,7 +40,7 @@ const PATHS = {
 const ChatBubble = ({ status, level }) => {
     const [text, setText] = useState("");
     const fullText = useMemo(() => {
-        if (status === 'critical') return "SYSTEM CRITICAL. INTEGRITY FAILING. FEED ME DATA.";
+        if (status === 'critical') return "SYSTEM CRITICAL. INTEGRITY FAILING.";
         if (status === 'god') return "I AM EFFICIENT. I AM UNSTOPPABLE.";
         return "SYSTEM ONLINE. AWAITING INPUT.";
     }, [status]);
@@ -74,9 +74,8 @@ const AvatarConstruct = ({ stats, statusColor, isCritical, isOptimal, showMuscle
         <svg viewBox="0 0 200 400" className="body-svg" style={{ opacity: isGhost ? 0.3 : 1 }}>
             <defs>
                 <filter id="plasma-flow">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise">
-                        <animate attributeName="baseFrequency" values="0.02;0.05;0.02" dur="10s" repeatCount="indefinite" />
-                    </feTurbulence>
+                    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
+                    {/* Removed animate tag to prevent React crashes */}
                     <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
                 </filter>
                 <pattern id="hex-mesh-organic" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
@@ -144,7 +143,7 @@ const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
 
     // --- STATE ---
     const [activePart, setActivePart] = useState(null);
-    const [dirtLevel, setDirtLevel] = useState(stats.training < 0.3 ? 1 : 0); // 0 to 1
+    // const [dirtLevel, setDirtLevel] = useState(stats.training < 0.3 ? 1 : 0); // Disabled for safety
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const containerRef = useRef(null);
 
@@ -186,7 +185,8 @@ const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
         setTimeout(() => setActivePart(null), 3000);
     };
 
-    // Cleaning Gesture
+    // Cleaning Gesture - Disabled for safety
+    /*
     const bindClean = useDrag(({ movement: [mx, my], velocity: [vx, vy], down }) => {
         if (down && dirtLevel > 0) {
             const speed = Math.abs(vx) + Math.abs(vy);
@@ -196,6 +196,7 @@ const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
             }
         }
     });
+    */
 
     return (
         <div
@@ -203,8 +204,8 @@ const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
             ref={containerRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
-            {...bindClean()}
-            style={{ touchAction: 'none' }} // Prevent scrolling while cleaning
+            // {...bindClean()} 
+            style={{ touchAction: 'none' }}
         >
             {/* Backgrounds */}
             <div className="medical-grid-bg" />
@@ -233,16 +234,18 @@ const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
                 <AvatarConstruct {...{ stats, statusColor, isCritical, isOptimal, showMuscles, showArmor, onPartTap }} />
             </motion.div>
 
-            {/* Dirt Overlay (Cleaning Mechanic) */}
+            {/* Dirt Overlay (Cleaning Mechanic) - Disabled */}
+            {/*
             {dirtLevel > 0 && (
-                <div
-                    className="dirt-overlay"
+                <div 
+                    className="dirt-overlay" 
                     style={{ opacity: dirtLevel }}
                 >
                     <div className="dirt-noise"></div>
                     <div className="clean-hint">SWIPE TO CLEAN SYSTEM</div>
                 </div>
             )}
+            */}
 
             {/* Diagnostic Overlay */}
             <AnimatePresence>
