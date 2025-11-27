@@ -1,239 +1,169 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './BodyWidget.css';
 
-// --- SVG PATHS ---
-const PATHS = {
-    skeleton: {
-        head: "M85,30 L115,30 L125,50 L115,75 L85,75 L75,50 Z",
-        spine: "M100,75 L100,160",
-        hips: "M75,160 L125,160 L120,190 L80,190 Z",
-        legsLeft: "M90,190 L90,380",
-        legsRight: "M110,190 L110,380",
-        armsLeft: "M50,85 L50,220",
-        armsRight: "M150,85 L150,220",
-        ribs: "M80,100 L120,100 M85,120 L115,120 M90,140 L110,140"
-    },
-    muscles: {
-        torso: "M70,85 L130,85 L120,160 L80,160 Z",
-        upperArmLeft: "M35,105 L65,105 L60,160 L40,160 Z",
-        upperArmRight: "M135,105 L165,105 L160,160 L140,160 Z",
-        lowerArmLeft: "M40,160 L60,160 L55,220 L45,220 Z",
-        lowerArmRight: "M140,160 L160,160 L155,220 L145,220 Z",
-        thighLeft: "M80,190 L100,190 L95,280 L85,280 Z",
-        thighRight: "M100,190 L120,190 L115,280 L105,280 Z",
-        calfLeft: "M85,280 L95,280 L90,380 L80,380 Z",
-        calfRight: "M105,280 L115,280 L110,380 L100,380 Z"
-    },
-    armor: {
-        chest: "M65,85 L135,85 L130,130 L100,150 L70,130 Z",
-        shoulderLeft: "M20,80 L70,80 L65,115 L25,110 Z",
-        shoulderRight: "M130,80 L180,80 L175,110 L135,115 Z",
-        thighLeft: "M75,190 L100,190 L95,250 L80,250 Z",
-        thighRight: "M100,190 L125,190 L120,250 L105,250 Z"
+// Bezpečné varianty pro animace (žádné složité výpočty)
+const breathingVariant = {
+    idle: {
+        scale: [1, 1.02, 1],
+        transition: {
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+        }
     }
 };
 
-// --- SUB-COMPONENTS ---
-
-const ChatBubble = ({ status }) => {
-    const [text, setText] = useState("");
-
-    // Memoize the target text to prevent unnecessary re-calculations
-    const fullText = useMemo(() => {
-        if (status === 'critical') return "SYSTEM CRITICAL. FEED ME DATA.";
-        if (status === 'god') return "I AM EFFICIENT. I AM UNSTOPPABLE.";
-        return "SYSTEM ONLINE. AWAITING INPUT.";
-    }, [status]);
-
-    useEffect(() => {
-        let i = 0;
-        setText(""); // Reset text on status change
-        const interval = setInterval(() => {
-            setText(fullText.slice(0, i + 1));
-            i++;
-            if (i > fullText.length) clearInterval(interval);
-        }, 50);
-        return () => clearInterval(interval);
-    }, [fullText]);
-
-    return (
-        <motion.div
-            className="chat-bubble"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            key={status} // Remount on status change
-        >
-            <div className="chat-text">{text}<span className="cursor-blink">_</span></div>
-            <div className="chat-line"></div>
-        </motion.div>
-    );
+const pulseVariant = {
+    idle: {
+        opacity: [0.4, 0.8, 0.4],
+        transition: {
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+        }
+    },
+    active: {
+        opacity: [0.4, 1, 0.4],
+        scale: [1, 1.1, 1],
+        transition: { duration: 0.5 }
+    }
 };
 
-// Simplified AvatarConstruct - Purely presentational, no definitions
-const AvatarConstruct = ({ stats, statusColor, isCritical, isOptimal, showMuscles, showArmor, onPartTap, isGhost = false }) => {
-    return (
-        <svg viewBox="0 0 200 400" className="body-svg" style={{ opacity: isGhost ? 0.3 : 1 }}>
-            {/* SKELETON */}
-            <g stroke={isGhost ? statusColor : "#333"} strokeWidth="2" fill="none">
-                {Object.values(PATHS.skeleton).map((d, i) => <path key={i} d={d} />)}
-            </g>
-
-            {/* MUSCLES */}
-            {showMuscles && (
-                <g filter={isOptimal ? "url(#plasma-flow)" : "none"}>
-                    {Object.entries(PATHS.muscles).map(([key, d]) => (
-                        <motion.path
-                            key={key}
-                            d={d}
-                            fill={isGhost ? "none" : "url(#hex-mesh-organic)"}
-                            stroke={isGhost ? statusColor : "none"}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            onClick={() => !isGhost && onPartTap && onPartTap(key, Math.round((stats.training || 0) * 100))}
-                            style={{ cursor: isGhost ? 'default' : 'pointer' }}
-                        />
-                    ))}
-                </g>
-            )}
-
-            {/* ARMOR */}
-            {showArmor && (
-                <g>
-                    {Object.entries(PATHS.armor).map(([key, d]) => (
-                        <motion.path
-                            key={key}
-                            d={d}
-                            fill={isGhost ? "none" : statusColor}
-                            fillOpacity={isGhost ? 0 : 0.2}
-                            stroke={statusColor}
-                            strokeWidth="1"
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            onClick={() => !isGhost && onPartTap && onPartTap(key, 100)}
-                            style={{ cursor: isGhost ? 'default' : 'pointer' }}
-                        />
-                    ))}
-                </g>
-            )}
-
-            {/* EYES */}
-            <motion.path
-                d="M90,45 L110,45"
-                stroke={isCritical ? "#ff003c" : (isOptimal ? "#FFF" : statusColor)}
-                strokeWidth={isOptimal ? 3 : 1}
-            />
-        </svg>
-    );
-};
-
-const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
-    // 1. Safety Check: Ensure stats object exists
+const BodyWidget = ({ stats, userLevel = 1 }) => {
+    // Safety check
     if (!stats) return null;
 
-    // --- STATE ---
-    const [activePart, setActivePart] = useState(null);
-    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    const containerRef = useRef(null);
+    const [reaction, setReaction] = useState(false);
+    const [message, setMessage] = useState("SYSTEM ONLINE");
 
-    // --- DERIVED STATE ---
-    const isCritical = (stats.training < 0.3 || stats.nutrition < 0.3 || stats.recovery < 0.3);
-    const isOptimal = (stats.training > 0.8 && stats.nutrition > 0.8 && stats.recovery > 0.8);
-    const isGodMode = isAllDone && streak > 7;
-    const userLevel = Math.max(1, streak);
-    const showMuscles = userLevel >= 5 || isGodMode;
-    const showArmor = userLevel >= 15 || isGodMode;
+    // Reakce na změnu statistik (splnění úkolu)
+    useEffect(() => {
+        // Spustí vizuální "Power Surge"
+        setReaction(true);
 
-    const statusColor = isGodMode ? "#FFD700" : (isCritical ? "#ff003c" : (isOptimal ? "#39FF14" : "var(--primary)"));
-    const statusType = isGodMode ? 'god' : (isCritical ? 'critical' : 'normal');
+        // Náhodná hláška při aktivitě
+        const phrases = [
+            "ENERGY SPIKE DETECTED",
+            "OPTIMIZING SYSTEMS...",
+            "DOPAMINE RECEIVED",
+            "MUSCLE DENSITY INCREASING",
+            "SYNC COMPLETE"
+        ];
+        setMessage(phrases[Math.floor(Math.random() * phrases.length)]);
 
-    // --- ANIMATIONS ---
-    // Combined animation object to prevent prop conflict
-    const mainAnim = {
-        y: isCritical ? [0, 2, -2, 0] : [-5, 5, -5],
-        scale: [1, 1.02, 1], // Heartbeat
-        transition: {
-            y: { duration: isCritical ? 0.2 : 6, repeat: Infinity, ease: "easeInOut" },
-            scale: { duration: 1, repeat: Infinity, ease: "easeInOut" }
-        }
-    };
+        // Reset reakce po chvíli
+        const timer = setTimeout(() => {
+            setReaction(false);
+            setMessage("AWAITING INPUT..."); // Návrat do idle stavu
+        }, 2000);
 
-    // --- INTERACTION ---
-    const handleMouseMove = (e) => {
-        if (!containerRef.current) return;
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = (e.clientX - rect.left - rect.width / 2) / 20;
-        const y = (e.clientY - rect.top - rect.height / 2) / 20;
-        setMousePos({ x, y });
-    };
+        return () => clearTimeout(timer);
+    }, [stats]); // Reaguje kdykoliv se změní stats
 
-    const handlePartTap = (partName, value) => {
-        if (navigator.vibrate) navigator.vibrate(15);
-        setActivePart({ name: partName, value: value });
-        setTimeout(() => setActivePart(null), 3000);
-    };
+    // Výpočet barvy jádra podle zdraví
+    const coreColor = stats.nutrition > 0.8 ? "#39FF14" : (stats.nutrition > 0.3 ? "#FACC15" : "#FF003C");
 
     return (
-        <div
-            className={`body-widget-container ${isCritical ? 'status-critical' : ''} ${isOptimal ? 'status-optimal' : ''}`}
-            ref={containerRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
-            style={{ touchAction: 'none' }}
-        >
-            {/* GLOBAL SVG DEFINITIONS (Defined once here) */}
-            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-                <defs>
-                    <filter id="plasma-flow">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="noise" />
-                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="5" />
-                    </filter>
-                    <pattern id="hex-mesh-organic" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-                        <path d="M4 0 L8 2 L8 6 L4 8 L0 6 L0 2 Z" fill="none" stroke={statusColor} strokeWidth="0.5" opacity="0.3" />
-                        <rect width="8" height="8" fill={statusColor} opacity="0.1" />
-                    </pattern>
-                </defs>
-            </svg>
+        <div className="body-widget-container">
+            {/* Chat Bubble - Reaktivní */}
+            <div className="cyber-chat-bubble">
+                <span className="typing-text">{message}</span>
+            </div>
 
-            {/* Backgrounds */}
-            <div className="medical-grid-bg" />
-            {isOptimal && <div className="particles-container" />}
-
-            {/* Chat Bubble */}
-            <ChatBubble status={statusType} />
-
-            {/* Main Avatar */}
-            <motion.div
-                className="body-silhouette-wrapper"
-                animate={mainAnim}
-            >
-                <AvatarConstruct
-                    stats={stats}
-                    statusColor={statusColor}
-                    isCritical={isCritical}
-                    isOptimal={isOptimal}
-                    showMuscles={showMuscles}
-                    showArmor={showArmor}
-                    onPartTap={handlePartTap}
+            <div className="avatar-wrapper">
+                {/* Pozadí - Rotující mřížka (čisté CSS/SVG) */}
+                <motion.div
+                    className="grid-bg"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
                 />
-            </motion.div>
 
-            {/* Diagnostic Overlay */}
-            <AnimatePresence>
-                {activePart && (
-                    <motion.div
-                        className="diagnostic-overlay"
-                        key="overlay" // CRITICAL: Key required for AnimatePresence
-                        initial={{ opacity: 0, y: 20, x: "-50%" }}
-                        animate={{ opacity: 1, y: 0, x: "-50%" }}
-                        exit={{ opacity: 0, y: 10, x: "-50%" }}
-                    >
-                        <div className="diag-header">SCANNING: <span style={{ color: statusColor }}>{activePart.name}</span></div>
-                        <div className="diag-value">INTEGRITY: {activePart.value}%</div>
-                        <div className="scan-line-anim" style={{ background: statusColor, boxShadow: `0 0 10px ${statusColor}` }}></div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                {/* Hlavní postava - SVG */}
+                <svg viewBox="0 0 200 400" className="cyber-avatar-svg">
+                    <defs>
+                        <linearGradient id="muscleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#1a1a1a" />
+                            <stop offset="50%" stopColor={reaction ? "#fff" : "#39FF14"} stopOpacity={stats.training || 0.5} /> {/* Blesk při reakci */}
+                            <stop offset="100%" stopColor="#1a1a1a" />
+                        </linearGradient>
+                        <filter id="glow">
+                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                            <feMerge>
+                                <feMergeNode in="coloredBlur" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                    </defs>
+
+                    {/* SKELETON (Základ) */}
+                    <path d="M100 50 L100 350 M70 100 L130 100 M60 350 L100 250 L140 350" stroke="#333" strokeWidth="4" fill="none" />
+
+                    {/* HRUDNÍK (Dýchání) */}
+                    <motion.g variants={breathingVariant} animate="idle" style={{ transformOrigin: "100px 150px" }}>
+                        {/* Brnění / Svaly */}
+                        <path
+                            d="M70 120 Q100 180 130 120 Q130 80 100 80 Q70 80 70 120 Z"
+                            fill="url(#muscleGradient)"
+                            stroke={coreColor}
+                            strokeWidth="2"
+                        />
+
+                        {/* JÁDRO (Reaktor - Tep) */}
+                        <motion.circle
+                            cx="100" cy="120" r={reaction ? 12 : 8}
+                            fill={coreColor}
+                            filter="url(#glow)"
+                            variants={pulseVariant}
+                            animate={reaction ? "active" : "idle"}
+                        />
+                    </motion.g>
+
+                    {/* HLAVA (Oči) */}
+                    <g transform="translate(0, -5)">
+                        <path d="M85 40 Q100 20 115 40 Q115 70 85 70 Q70 55 85 40 Z" fill="#111" stroke="#555" strokeWidth="2" />
+
+                        {/* Oči - Mrkání (Jednoduchá opacita) */}
+                        <motion.g
+                            animate={{ opacity: [1, 1, 0, 1] }} // Mrk
+                            transition={{ duration: 4, times: [0, 0.9, 0.95, 1], repeat: Infinity }}
+                        >
+                            <circle cx="92" cy="50" r="2" fill="#fff" filter="url(#glow)" />
+                            <circle cx="108" cy="50" r="2" fill="#fff" filter="url(#glow)" />
+                        </motion.g>
+                    </g>
+
+                    {/* PAŽE (Zobrazení síly) */}
+                    {stats.training > 0.2 && (
+                        <motion.path
+                            d="M60 120 Q40 180 50 220"
+                            stroke="#39FF14"
+                            strokeWidth={4 + (stats.training * 10)} // Tloustnutí svalů
+                            strokeLinecap="round"
+                            fill="none"
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: 1 }}
+                            transition={{ duration: 1 }}
+                        />
+                    )}
+                    {stats.training > 0.2 && (
+                        <motion.path
+                            d="M140 120 Q160 180 150 220"
+                            stroke="#39FF14"
+                            strokeWidth={4 + (stats.training * 10)}
+                            strokeLinecap="round"
+                            fill="none"
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: 1 }}
+                            transition={{ duration: 1 }}
+                        />
+                    )}
+
+                </svg>
+
+                {/* Level Indicator */}
+                <div className="level-badge">LVL {userLevel}</div>
+            </div>
         </div>
     );
 };
