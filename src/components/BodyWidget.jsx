@@ -1,265 +1,315 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import './BodyWidget.css';
 
-// --- SVG PATHS DEFINITION ---
+// --- SVG PATHS (Unchanged geometry, organized for component splitting) ---
 const PATHS = {
     skeleton: {
         head: "M85,30 L115,30 L125,50 L115,75 L85,75 L75,50 Z",
         spine: "M100,75 L100,160",
         hips: "M75,160 L125,160 L120,190 L80,190 Z",
-        legs: "M90,190 L90,380 M110,190 L110,380",
-        arms: "M50,85 L50,220 M150,85 L150,220",
+        legsLeft: "M90,190 L90,380",
+        legsRight: "M110,190 L110,380",
+        armsLeft: "M50,85 L50,220",
+        armsRight: "M150,85 L150,220",
         ribs: "M80,100 L120,100 M85,120 L115,120 M90,140 L110,140"
     },
     muscles: {
         torso: "M70,85 L130,85 L120,160 L80,160 Z",
-        upperArmsLeft: "M35,105 L65,105 L60,160 L40,160 Z",
-        upperArmsRight: "M135,105 L165,105 L160,160 L140,160 Z",
-        lowerArmsLeft: "M40,160 L60,160 L55,220 L45,220 Z",
-        lowerArmsRight: "M140,160 L160,160 L155,220 L145,220 Z",
-        thighsLeft: "M80,190 L100,190 L95,280 L85,280 Z",
-        thighsRight: "M100,190 L120,190 L115,280 L105,280 Z",
-        calvesLeft: "M85,280 L95,280 L90,380 L80,380 Z",
-        calvesRight: "M105,280 L115,280 L110,380 L100,380 Z"
+        upperArmLeft: "M35,105 L65,105 L60,160 L40,160 Z",
+        upperArmRight: "M135,105 L165,105 L160,160 L140,160 Z",
+        lowerArmLeft: "M40,160 L60,160 L55,220 L45,220 Z",
+        lowerArmRight: "M140,160 L160,160 L155,220 L145,220 Z",
+        thighLeft: "M80,190 L100,190 L95,280 L85,280 Z",
+        thighRight: "M100,190 L120,190 L115,280 L105,280 Z",
+        calfLeft: "M85,280 L95,280 L90,380 L80,380 Z",
+        calfRight: "M105,280 L115,280 L110,380 L100,380 Z"
     },
     armor: {
         chest: "M65,85 L135,85 L130,130 L100,150 L70,130 Z",
-        shouldersLeft: "M20,80 L70,80 L65,115 L25,110 Z",
-        shouldersRight: "M130,80 L180,80 L175,110 L135,115 Z",
-        thighsLeft: "M75,190 L100,190 L95,250 L80,250 Z",
-        thighsRight: "M100,190 L125,190 L120,250 L105,250 Z"
+        shoulderLeft: "M20,80 L70,80 L65,115 L25,110 Z",
+        shoulderRight: "M130,80 L180,80 L175,110 L135,115 Z",
+        thighLeft: "M75,190 L100,190 L95,250 L80,250 Z",
+        thighRight: "M100,190 L125,190 L120,250 L105,250 Z"
     },
     wiring: "M100,85 C120,85 120,160 100,160 C80,160 80,85 100,85 M50,105 C60,130 40,130 50,160 M150,105 C140,130 160,130 150,160"
 };
 
-const BodyWidget = ({ stats, isAllDone = false }) => {
-    // stats: { training: 0-1, nutrition: 0-1, recovery: 0-1, know: 0-100 }
-    const [activePart, setActivePart] = useState(null); // Changed from hoveredPart
-    const [scanLine, setScanLine] = useState(false);
+const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
+    // --- STATE & LOGIC ---
+    const [activePart, setActivePart] = useState(null);
+    const [isCharging, setIsCharging] = useState(false);
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const containerRef = useRef(null);
+    const chargeTimerRef = useRef(null);
+    const controls = useAnimation();
 
-    // Normalize knowledge if it's 0-100
-    const knowledgeLevel = stats.know > 1 ? stats.know / 100 : stats.know;
+    // 1. Calculate "Needs" State
+    // Critical: Any stat < 30%
+    const isCritical = stats.training < 0.3 || stats.nutrition < 0.3 || stats.recovery < 0.3;
+    // Optimal: All stats > 80%
+    const isOptimal = stats.training > 0.8 && stats.nutrition > 0.8 && stats.recovery > 0.8;
+    // Overdrive (God Mode): All Done + High Streak
+    const isGodMode = isAllDone && streak > 7;
 
-    // Calculate average for Glitch Mode
-    const avgStats = (stats.training + stats.nutrition + stats.recovery + knowledgeLevel) / 4;
-    const isGlitch = avgStats < 0.2;
-    const isGodMode = isAllDone || (stats.training >= 1 && stats.nutrition >= 1 && stats.recovery >= 1 && knowledgeLevel >= 1);
+    // 2. Evolution System (Based on Streak/Level)
+    // Level 1-5: Skeleton, 6-15: Synthetic (Muscles), 16+: Armored
+    const userLevel = Math.max(1, streak); // Simple level mapping
+    const showMuscles = userLevel >= 5 || isGodMode;
+    const showArmor = userLevel >= 15 || isGodMode;
 
-    // --- HELPER FUNCTIONS ---
-    const getReactorStatus = (level) => {
-        if (isGodMode) return { color: "#FFD700", glow: "#FFFFFF", animate: { scale: [1, 1.2, 1], filter: "brightness(1.5)" }, t: 3 };
-        if (level < 0.3) return { color: "#ff003c", glow: "#ff003c", animate: { scale: [1, 0.9, 1], opacity: [0.8, 1, 0.8] }, t: 0.2 }; // Critical
-        if (level > 0.8) return { color: "#39FF14", glow: "#39FF14", animate: { scale: [1, 1.05, 1] }, t: 2 };   // Optimal
-        return { color: "#facc15", glow: "#facc15", animate: { opacity: [0.8, 1, 0.8] }, t: 1 };                // Normal
+    // --- INTERACTION HANDLERS ---
+
+    const handleMouseMove = (e) => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = (e.clientX - rect.left - rect.width / 2) / 20; // Normalize -10 to 10
+        const y = (e.clientY - rect.top - rect.height / 2) / 20;
+        setMousePos({ x, y });
     };
 
-    const reactor = getReactorStatus(stats.nutrition);
-
-    const handlePartInteraction = (partName, value) => {
-        // 1. Haptic feedback
+    const handlePartTap = (partName, value) => {
         if (navigator.vibrate) navigator.vibrate(15);
-
-        // 2. Set active part
         setActivePart({ name: partName, value: value });
-
-        // 3. Reset after 3 seconds
         setTimeout(() => setActivePart(null), 3000);
     };
 
-    const handleClick = () => {
-        setScanLine(true);
-        setTimeout(() => setScanLine(false), 2000);
+    // Recharge Mechanic (Hold to Charge)
+    const startRecharge = () => {
+        setIsCharging(true);
+        if (navigator.vibrate) navigator.vibrate([10]); // Initial feedback
+
+        let chargeTime = 0;
+        chargeTimerRef.current = setInterval(() => {
+            chargeTime += 100;
+            // Ramp up vibration intensity
+            if (chargeTime % 500 === 0 && navigator.vibrate) {
+                navigator.vibrate(20 + (chargeTime / 100));
+            }
+
+            if (chargeTime >= 2000) {
+                // SUCCESS
+                completeRecharge();
+            }
+        }, 100);
     };
 
-    // --- SUB-COMPONENTS ---
-    const AvatarLayer = ({ isGhost = false, offset = { x: 0, y: 0 }, colorOverride = null }) => (
-        <svg viewBox="0 0 200 400" className="body-svg" style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}>
-            <defs>
-                <filter id="glow-strong" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="6" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
+    const stopRecharge = () => {
+        setIsCharging(false);
+        if (chargeTimerRef.current) clearInterval(chargeTimerRef.current);
+    };
 
-                {/* Hex Mesh Pattern for Muscles */}
-                <pattern id="hex-mesh" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
-                    <path d="M4 0 L8 2 L8 6 L4 8 L0 6 L0 2 Z" fill="none" stroke={isGodMode ? "#FFD700" : "var(--primary)"} strokeWidth="0.5" opacity="0.5" />
-                    <circle cx="4" cy="4" r="1" fill={isGodMode ? "#FFD700" : "var(--primary)"} opacity="0.8" />
-                </pattern>
+    const completeRecharge = () => {
+        stopRecharge();
+        if (navigator.vibrate) navigator.vibrate([50, 50, 50]); // Success pattern
+        // Trigger Shockwave Animation
+        controls.start({
+            scale: [1, 1.2, 1],
+            filter: ["brightness(1)", "brightness(2)", "brightness(1)"],
+            transition: { duration: 0.5 }
+        });
+        // In a real app, this would update state/backend
+        handlePartTap("SYSTEM RECHARGED", 100);
+    };
 
-                <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="transparent" />
-                    <stop offset="50%" stopColor={isGodMode ? "#FFD700" : "var(--primary)"} stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="transparent" />
-                </linearGradient>
-            </defs>
+    // --- ANIMATION VARIANTS ---
 
-            {/* 1. BASE SKELETON (Always visible, dark) */}
-            <g stroke={colorOverride || "#333"} strokeWidth="2" fill="none" opacity={0.6}>
-                {Object.values(PATHS.skeleton).map((d, i) => <path key={i} d={d} />)}
-            </g>
+    const breatheAnim = {
+        scale: isCritical ? [1, 1.05, 1] : [1, 1.02, 1],
+        transition: {
+            duration: isCritical ? 1 : 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+        }
+    };
 
-            {/* 2. INTERNAL WIRING (Visible if low health/training) */}
-            {(stats.training < 0.4 || isGlitch) && (
-                <motion.path
-                    d={PATHS.wiring}
-                    stroke={isGlitch ? "#ff003c" : "#facc15"}
-                    strokeWidth="1"
-                    fill="none"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 0.8 }}
-                    transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-                />
-            )}
+    const floatAnim = {
+        y: isCritical ? [0, 2, -2, 0] : [-5, 5, -5], // Shiver if critical, float if normal
+        x: isCritical ? [-2, 2, -2, 2, 0] : 0, // Shiver x
+        transition: {
+            duration: isCritical ? 0.2 : 6,
+            repeat: Infinity,
+            ease: "easeInOut"
+        }
+    };
 
-            {/* 3. NANO MUSCLES (Pattern Fill) */}
-            <g stroke="none">
-                {Object.entries(PATHS.muscles).map(([key, d]) => (
-                    <motion.path
-                        key={key}
-                        d={d}
-                        fill={colorOverride || "url(#hex-mesh)"}
-                        initial={{ opacity: 0 }}
-                        animate={{
-                            opacity: activePart && activePart.name !== "MUSCLE DENSITY" ? 0.2 : 0.1 + (stats.training * 0.8),
-                            stroke: activePart?.name === "MUSCLE DENSITY" ? (isGodMode ? "#FFF" : "var(--primary)") : "none",
-                            strokeWidth: activePart?.name === "MUSCLE DENSITY" ? 2 : 0
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            handlePartInteraction("MUSCLE DENSITY", Math.round(stats.training * 100));
-                        }}
-                        style={{ cursor: 'pointer' }}
-                    />
-                ))}
-            </g>
+    // --- RENDER HELPERS ---
 
-            {/* 4. ARMOR PLATING (Visible if Training > 0.5 or God Mode) */}
-            {(stats.training > 0.5 || isGodMode) && (
-                <g fill={isGodMode ? "#FFD700" : (colorOverride || "var(--primary)")} stroke={isGodMode ? "#FFF" : "none"} strokeWidth="1">
-                    {Object.entries(PATHS.armor).map(([key, d]) => (
-                        <motion.path
-                            key={key}
-                            d={d}
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{
-                                scale: 1,
-                                opacity: activePart && activePart.name !== "ARMOR INTEGRITY" ? 0.2 : (isGodMode ? 0.9 : 0.4 + (stats.training * 0.4)),
-                                stroke: activePart?.name === "ARMOR INTEGRITY" ? "#FFF" : (isGodMode ? "#FFF" : "none"),
-                                strokeWidth: activePart?.name === "ARMOR INTEGRITY" ? 2 : 1
-                            }}
-                            transition={{ duration: 0.5 }}
-                            style={{ filter: isGodMode ? "url(#glow-strong)" : "none", cursor: 'pointer' }}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handlePartInteraction("ARMOR INTEGRITY", isGodMode ? 100 : Math.round(stats.training * 100));
-                            }}
-                        />
-                    ))}
-                </g>
-            )}
+    const getStatusColor = () => {
+        if (isGodMode) return "#FFD700"; // Gold
+        if (isCritical) return "#ff003c"; // Red
+        if (isOptimal) return "#39FF14"; // Green
+        return "var(--primary)"; // Default
+    };
 
-            {/* 5. CORE REACTOR (Nutrition) */}
-            <motion.circle
-                cx="100" cy="110" r={isGodMode ? 12 : 8}
-                fill={reactor.color}
-                animate={reactor.animate}
-                transition={{ duration: reactor.t, repeat: Infinity }}
-                style={{ filter: `drop-shadow(0 0 ${isGodMode ? 20 : 10}px ${reactor.glow})`, cursor: 'pointer' }}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handlePartInteraction("CORE REACTOR", Math.round(stats.nutrition * 100));
-                }}
-            />
-
-            {/* 6. DATA HALO (Knowledge) */}
-            <motion.ellipse
-                cx="100" cy="50" rx="40" ry="10"
-                fill="none"
-                stroke={isGodMode ? "#00FFFF" : "var(--primary)"}
-                strokeWidth="1"
-                strokeDasharray="5 5"
-                animate={{
-                    opacity: knowledgeLevel,
-                    rotateX: [0, 70, 0],
-                    rotateZ: [0, 360]
-                }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                style={{ filter: `drop-shadow(0 0 5px ${isGodMode ? "#00FFFF" : "var(--primary)"})`, cursor: 'pointer' }}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handlePartInteraction("NEURAL LINK", Math.round(knowledgeLevel * 100));
-                }}
-            />
-
-            {/* 7. ENERGY SHIELD (Recovery) */}
-            <motion.ellipse
-                cx="100" cy="200" rx="90" ry="190"
-                fill="none"
-                stroke={isGodMode ? "#FFF" : "var(--primary)"}
-                strokeWidth="2"
-                strokeDasharray="20 40"
-                initial={{ opacity: 0 }}
-                animate={{
-                    opacity: activePart && activePart.name !== "ENERGY SHIELD" ? 0.1 : stats.recovery * 0.5,
-                    scale: [1, 1.02, 1],
-                    rotate: 360,
-                    stroke: activePart?.name === "ENERGY SHIELD" ? "#FFF" : (isGodMode ? "#FFF" : "var(--primary)")
-                }}
-                transition={{
-                    rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-                    scale: { duration: 2, repeat: Infinity }
-                }}
-                style={{ cursor: 'pointer' }}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handlePartInteraction("ENERGY SHIELD", Math.round(stats.recovery * 100));
-                }}
-            />
-
-            {/* Scan Line Effect */}
-            {scanLine && (
-                <motion.rect
-                    x="0" y="0" width="200" height="20"
-                    fill="url(#scan-gradient)"
-                    initial={{ y: 0, opacity: 0.8 }}
-                    animate={{ y: 400, opacity: 0 }}
-                    transition={{ duration: 1.5, ease: "linear" }}
-                />
-            )}
-        </svg>
-    );
+    const statusColor = getStatusColor();
 
     return (
-        <div className={`body-widget-container ${isGlitch ? 'glitch-active' : ''}`} onClick={handleClick}>
-            {/* Medical Grid Background */}
+        <div
+            className={`body-widget-container ${isCritical ? 'status-critical' : ''} ${isOptimal ? 'status-optimal' : ''}`}
+            ref={containerRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setMousePos({ x: 0, y: 0 })}
+        >
+            {/* 1. Background Effects */}
             <div className="medical-grid-bg" />
+            {isCritical && <div className="cracked-overlay" />}
+            {isOptimal && <div className="particles-container" />} {/* CSS Particles */}
 
-            {/* Scanline Texture Overlay */}
-            <div className="scanline-texture" />
-
-            {/* God Mode Background Geometry */}
-            {isGodMode && <div className="god-mode-bg" />}
-
-            {/* Glitch Layers (RGB Split) */}
-            {isGlitch && (
-                <>
-                    <div className="glitch-layer red">
-                        <AvatarLayer isGhost={true} offset={{ x: -2, y: 0 }} colorOverride="#ff003c" />
-                    </div>
-                    <div className="glitch-layer blue">
-                        <AvatarLayer isGhost={true} offset={{ x: 2, y: 0 }} colorOverride="#00FFFF" />
-                    </div>
-                </>
-            )}
-
-            {/* Main Avatar */}
+            {/* 2. The Living Construct */}
             <motion.div
-                className="body-silhouette-wrapper breathing-anim"
-                animate={isGodMode ? { y: [0, -20, 0] } : { y: 0 }}
-                transition={isGodMode ? { duration: 4, repeat: Infinity, ease: "easeInOut" } : {}}
+                className="body-silhouette-wrapper"
+                animate={floatAnim}
             >
-                <AvatarLayer />
+                <svg viewBox="0 0 200 400" className="body-svg">
+                    <defs>
+                        <filter id="glow-soft" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="4" result="blur" />
+                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                        </filter>
+                        <pattern id="hex-mesh" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                            <path d="M4 0 L8 2 L8 6 L4 8 L0 6 L0 2 Z" fill="none" stroke={statusColor} strokeWidth="0.5" opacity="0.3" />
+                        </pattern>
+                    </defs>
+
+                    {/* GROUP: HEAD (Gaze Tracking) */}
+                    <motion.g
+                        style={{ originX: "100px", originY: "50px" }}
+                        animate={{ rotateX: mousePos.y, rotateY: mousePos.x }}
+                    >
+                        <path d={PATHS.skeleton.head} stroke={statusColor} strokeWidth="2" fill="rgba(0,0,0,0.8)" />
+                        {/* Eyes / Visor */}
+                        <motion.path
+                            d="M90,45 L110,45"
+                            stroke={isCritical ? "#ff003c" : (isOptimal ? "#FFF" : statusColor)}
+                            strokeWidth={isOptimal ? 3 : 1}
+                            style={{ filter: isOptimal ? "url(#glow-soft)" : "none" }}
+                        />
+                    </motion.g>
+
+                    {/* GROUP: TORSO (Breathing) */}
+                    <motion.g
+                        style={{ originX: "100px", originY: "120px" }}
+                        animate={breatheAnim}
+                    >
+                        <path d={PATHS.skeleton.spine} stroke="#333" strokeWidth="2" />
+                        <path d={PATHS.skeleton.ribs} stroke="#333" strokeWidth="2" opacity="0.5" />
+
+                        {/* Muscles Layer */}
+                        {showMuscles && (
+                            <motion.path
+                                d={PATHS.muscles.torso}
+                                fill="url(#hex-mesh)"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                onClick={() => handlePartTap("CORE MUSCULATURE", Math.round(stats.training * 100))}
+                            />
+                        )}
+
+                        {/* Armor Layer */}
+                        {showArmor && (
+                            <motion.path
+                                d={PATHS.armor.chest}
+                                fill={statusColor}
+                                fillOpacity={isGodMode ? 0.8 : 0.2}
+                                stroke={statusColor}
+                                strokeWidth="1"
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                onClick={() => handlePartTap("CHEST PLATING", 100)}
+                            />
+                        )}
+
+                        {/* CORE REACTOR (Recharge Interaction) */}
+                        <motion.circle
+                            cx="100" cy="110" r={isGodMode ? 12 : 8}
+                            fill={isCharging ? "#FFF" : statusColor}
+                            animate={controls}
+                            style={{
+                                cursor: 'pointer',
+                                filter: `drop-shadow(0 0 ${isCharging ? 20 : 10}px ${statusColor})`
+                            }}
+                            onPointerDown={startRecharge}
+                            onPointerUp={stopRecharge}
+                            onPointerLeave={stopRecharge}
+                        />
+                        {/* Charge Ring */}
+                        {isCharging && (
+                            <motion.circle
+                                cx="100" cy="110" r="20"
+                                stroke={statusColor} strokeWidth="2" fill="none"
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1.5, opacity: 0 }}
+                                transition={{ duration: 1, repeat: Infinity }}
+                            />
+                        )}
+                    </motion.g>
+
+                    {/* GROUP: ARMS (Independent Movement potential) */}
+                    <g>
+                        {/* Left Arm */}
+                        <path d={PATHS.skeleton.armsLeft} stroke="#333" strokeWidth="2" />
+                        {showMuscles && (
+                            <>
+                                <path d={PATHS.muscles.upperArmLeft} fill="url(#hex-mesh)" onClick={() => handlePartTap("BICEP L", Math.round(stats.training * 100))} />
+                                <path d={PATHS.muscles.lowerArmLeft} fill="url(#hex-mesh)" />
+                            </>
+                        )}
+                        {showArmor && (
+                            <path d={PATHS.armor.shoulderLeft} fill={statusColor} fillOpacity="0.2" stroke={statusColor} />
+                        )}
+
+                        {/* Right Arm */}
+                        <path d={PATHS.skeleton.armsRight} stroke="#333" strokeWidth="2" />
+                        {showMuscles && (
+                            <>
+                                <path d={PATHS.muscles.upperArmRight} fill="url(#hex-mesh)" onClick={() => handlePartTap("BICEP R", Math.round(stats.training * 100))} />
+                                <path d={PATHS.muscles.lowerArmRight} fill="url(#hex-mesh)" />
+                            </>
+                        )}
+                        {showArmor && (
+                            <path d={PATHS.armor.shoulderRight} fill={statusColor} fillOpacity="0.2" stroke={statusColor} />
+                        )}
+                    </g>
+
+                    {/* GROUP: LEGS */}
+                    <g>
+                        <path d={PATHS.skeleton.hips} stroke="#333" strokeWidth="2" />
+                        <path d={PATHS.skeleton.legsLeft} stroke="#333" strokeWidth="2" />
+                        <path d={PATHS.skeleton.legsRight} stroke="#333" strokeWidth="2" />
+
+                        {showMuscles && (
+                            <>
+                                <path d={PATHS.muscles.thighLeft} fill="url(#hex-mesh)" onClick={() => handlePartTap("QUAD L", Math.round(stats.training * 100))} />
+                                <path d={PATHS.muscles.thighRight} fill="url(#hex-mesh)" onClick={() => handlePartTap("QUAD R", Math.round(stats.training * 100))} />
+                                <path d={PATHS.muscles.calfLeft} fill="url(#hex-mesh)" />
+                                <path d={PATHS.muscles.calfRight} fill="url(#hex-mesh)" />
+                            </>
+                        )}
+                        {showArmor && (
+                            <>
+                                <path d={PATHS.armor.thighLeft} fill={statusColor} fillOpacity="0.2" stroke={statusColor} />
+                                <path d={PATHS.armor.thighRight} fill={statusColor} fillOpacity="0.2" stroke={statusColor} />
+                            </>
+                        )}
+                    </g>
+
+                    {/* Energy Shield (Recovery) */}
+                    <motion.ellipse
+                        cx="100" cy="200" rx="90" ry="190"
+                        fill="none"
+                        stroke={statusColor}
+                        strokeWidth="1"
+                        strokeDasharray="10 50"
+                        animate={{
+                            opacity: stats.recovery * 0.5,
+                            rotate: 360
+                        }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        style={{ pointerEvents: 'none' }}
+                    />
+
+                </svg>
             </motion.div>
 
             {/* Diagnostic Overlay (Dynamic Status Bar) */}
@@ -272,12 +322,24 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                         exit={{ opacity: 0, y: 10, x: "-50%" }}
                         transition={{ duration: 0.2 }}
                     >
-                        <div className="diag-header">SCANNING: <span style={{ color: 'var(--primary)' }}>{activePart.name}</span></div>
+                        <div className="diag-header">SCANNING: <span style={{ color: statusColor }}>{activePart.name}</span></div>
                         <div className="diag-value">INTEGRITY: {activePart.value}%</div>
-                        <div className="scan-line-anim"></div>
+                        <div className="scan-line-anim" style={{ background: statusColor, boxShadow: `0 0 10px ${statusColor}` }}></div>
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Recharge Hint Overlay (Only if Critical and not charging) */}
+            {isCritical && !isCharging && !activePart && (
+                <motion.div
+                    className="recharge-hint"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                >
+                    HOLD CORE TO RECHARGE
+                </motion.div>
+            )}
         </div>
     );
 };
