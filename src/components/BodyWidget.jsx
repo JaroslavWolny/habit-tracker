@@ -1,169 +1,175 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, Sphere, Capsule, Cylinder, useCursor } from '@react-three/drei';
+import { EffectComposer, Bloom, Noise, Vignette } from '@react-three/postprocessing';
+import * as THREE from 'three';
 import './BodyWidget.css';
 
-// Bezpečné varianty pro animace (žádné složité výpočty)
-const breathingVariant = {
-    idle: {
-        scale: [1, 1.02, 1],
-        transition: {
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut"
+// --- 3D AVATAR COMPONENT ---
+const HologramAvatar = ({ stats, statusColor, isCritical, isGodMode }) => {
+    const group = useRef();
+    const [hovered, setHover] = useState(false);
+    useCursor(hovered);
+
+    // Breathing & Floating Animation
+    useFrame((state) => {
+        const t = state.clock.getElapsedTime();
+        if (group.current) {
+            // Float
+            group.current.position.y = Math.sin(t * 0.5) * 0.1;
+            // Rotate
+            group.current.rotation.y = Math.sin(t * 0.2) * 0.1;
+            // Breathe (Scale Chest)
+            const breathe = 1 + Math.sin(t * 2) * 0.02;
+            group.current.scale.set(breathe, breathe, breathe);
         }
-    }
-};
+    });
 
-const pulseVariant = {
-    idle: {
-        opacity: [0.4, 0.8, 0.4],
-        transition: {
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-        }
-    },
-    active: {
-        opacity: [0.4, 1, 0.4],
-        scale: [1, 1.1, 1],
-        transition: { duration: 0.5 }
-    }
-};
-
-const BodyWidget = ({ stats, userLevel = 1 }) => {
-    // Safety check
-    if (!stats) return null;
-
-    const [reaction, setReaction] = useState(false);
-    const [message, setMessage] = useState("SYSTEM ONLINE");
-
-    // Reakce na změnu statistik (splnění úkolu)
-    useEffect(() => {
-        // Spustí vizuální "Power Surge"
-        setReaction(true);
-
-        // Náhodná hláška při aktivitě
-        const phrases = [
-            "ENERGY SPIKE DETECTED",
-            "OPTIMIZING SYSTEMS...",
-            "DOPAMINE RECEIVED",
-            "MUSCLE DENSITY INCREASING",
-            "SYNC COMPLETE"
-        ];
-        setMessage(phrases[Math.floor(Math.random() * phrases.length)]);
-
-        // Reset reakce po chvíli
-        const timer = setTimeout(() => {
-            setReaction(false);
-            setMessage("AWAITING INPUT..."); // Návrat do idle stavu
-        }, 2000);
-
-        return () => clearTimeout(timer);
-    }, [stats]); // Reaguje kdykoliv se změní stats
-
-    // Výpočet barvy jádra podle zdraví
-    const coreColor = stats.nutrition > 0.8 ? "#39FF14" : (stats.nutrition > 0.3 ? "#FACC15" : "#FF003C");
+    // Material for the Hologram
+    const materialProps = useMemo(() => ({
+        color: "#000000",
+        emissive: statusColor,
+        emissiveIntensity: isGodMode ? 2 : (isCritical ? 3 : 1.5),
+        roughness: 0.2,
+        metalness: 0.8,
+        wireframe: false,
+        transparent: true,
+        opacity: 0.9,
+    }), [statusColor, isCritical, isGodMode]);
 
     return (
-        <div className="body-widget-container">
-            {/* Chat Bubble - Reaktivní */}
-            <div className="cyber-chat-bubble">
+        <group ref={group} onPointerOver={() => setHover(true)} onPointerOut={() => setHover(false)}>
+            {/* HEAD */}
+            <Sphere args={[0.35, 32, 32]} position={[0, 1.6, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Sphere>
+            {/* Eyes (Visor) */}
+            <Box args={[0.4, 0.1, 0.2]} position={[0, 1.6, 0.25]}>
+                <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={2} />
+            </Box>
+
+            {/* TORSO */}
+            <Cylinder args={[0.3, 0.2, 1, 32]} position={[0, 0.9, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Cylinder>
+
+            {/* CORE REACTOR */}
+            <Sphere args={[0.15, 32, 32]} position={[0, 1.0, 0.25]}>
+                <meshStandardMaterial
+                    color={statusColor}
+                    emissive={statusColor}
+                    emissiveIntensity={3}
+                    toneMapped={false}
+                />
+            </Sphere>
+
+            {/* SHOULDERS */}
+            <Sphere args={[0.25, 32, 32]} position={[-0.5, 1.3, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Sphere>
+            <Sphere args={[0.25, 32, 32]} position={[0.5, 1.3, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Sphere>
+
+            {/* ARMS */}
+            <Capsule args={[0.12, 0.6, 4, 8]} position={[-0.55, 0.8, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Capsule>
+            <Capsule args={[0.12, 0.6, 4, 8]} position={[0.55, 0.8, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Capsule>
+
+            {/* HIPS */}
+            <Cylinder args={[0.2, 0.25, 0.4, 32]} position={[0, 0.2, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Cylinder>
+
+            {/* LEGS */}
+            <Capsule args={[0.13, 0.9, 4, 8]} position={[-0.25, -0.6, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Capsule>
+            <Capsule args={[0.13, 0.9, 4, 8]} position={[0.25, -0.6, 0]}>
+                <meshStandardMaterial {...materialProps} />
+            </Capsule>
+        </group>
+    );
+};
+
+// Helper for Box geometry since 'Box' isn't exported directly sometimes
+const Box = (props) => {
+    return (
+        <mesh {...props}>
+            <boxGeometry args={props.args} />
+            {props.children}
+        </mesh>
+    )
+}
+
+
+const BodyWidget = ({ stats, userLevel = 1 }) => {
+    if (!stats) return null;
+
+    const [message, setMessage] = useState("SYSTEM ONLINE");
+
+    // Derived State
+    const isCritical = (stats.training < 0.3 || stats.nutrition < 0.3 || stats.recovery < 0.3);
+    const isGodMode = stats.training > 0.9 && stats.nutrition > 0.9;
+    const statusColor = isGodMode ? "#FFD700" : (isCritical ? "#ff003c" : "#39FF14");
+
+    useEffect(() => {
+        const phrases = ["SYSTEM OPTIMAL", "ANALYZING BIOMETRICS", "SYNCING...", "AWAITING INPUT"];
+        const interval = setInterval(() => {
+            setMessage(phrases[Math.floor(Math.random() * phrases.length)]);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="body-widget-container" style={{ height: '50vh', minHeight: '400px', width: '100%', position: 'relative' }}>
+
+            {/* Chat Bubble Overlay */}
+            <div className="cyber-chat-bubble" style={{ top: '20px', right: '20px', pointerEvents: 'none' }}>
                 <span className="typing-text">{message}</span>
             </div>
 
-            <div className="avatar-wrapper">
-                {/* Pozadí - Rotující mřížka (čisté CSS/SVG) */}
-                <motion.div
-                    className="grid-bg"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+            {/* 3D SCENE */}
+            <Canvas camera={{ position: [0, 0, 4.5], fov: 45 }} gl={{ antialias: false }}>
+                <color attach="background" args={['#050505']} />
+                <fog attach="fog" args={['#050505', 5, 15]} />
+
+                {/* LIGHTING */}
+                <ambientLight intensity={0.5} />
+                <pointLight position={[10, 10, 10]} intensity={1} color={statusColor} />
+                <pointLight position={[-10, -10, -10]} intensity={0.5} color="#0000ff" />
+
+                {/* AVATAR */}
+                <HologramAvatar
+                    stats={stats}
+                    statusColor={statusColor}
+                    isCritical={isCritical}
+                    isGodMode={isGodMode}
                 />
 
-                {/* Hlavní postava - SVG */}
-                <svg viewBox="0 0 200 400" className="cyber-avatar-svg">
-                    <defs>
-                        <linearGradient id="muscleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#1a1a1a" />
-                            <stop offset="50%" stopColor={reaction ? "#fff" : "#39FF14"} stopOpacity={stats.training || 0.5} /> {/* Blesk při reakci */}
-                            <stop offset="100%" stopColor="#1a1a1a" />
-                        </linearGradient>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-                            <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                        </filter>
-                    </defs>
+                {/* POST PROCESSING (The Glow) */}
+                <EffectComposer disableNormalPass>
+                    <Bloom luminanceThreshold={0} mipmapBlur intensity={1.5} radius={0.6} />
+                    <Noise opacity={0.05} />
+                    <Vignette eskil={false} offset={0.1} darkness={1.1} />
+                </EffectComposer>
 
-                    {/* SKELETON (Základ) */}
-                    <path d="M100 50 L100 350 M70 100 L130 100 M60 350 L100 250 L140 350" stroke="#333" strokeWidth="4" fill="none" />
+                {/* CONTROLS */}
+                <OrbitControls
+                    enableZoom={false}
+                    enablePan={false}
+                    minPolarAngle={Math.PI / 2.5}
+                    maxPolarAngle={Math.PI / 1.5}
+                    autoRotate={true}
+                    autoRotateSpeed={0.5}
+                />
+            </Canvas>
 
-                    {/* HRUDNÍK (Dýchání) */}
-                    <motion.g variants={breathingVariant} animate="idle" style={{ transformOrigin: "100px 150px" }}>
-                        {/* Brnění / Svaly */}
-                        <path
-                            d="M70 120 Q100 180 130 120 Q130 80 100 80 Q70 80 70 120 Z"
-                            fill="url(#muscleGradient)"
-                            stroke={coreColor}
-                            strokeWidth="2"
-                        />
-
-                        {/* JÁDRO (Reaktor - Tep) */}
-                        <motion.circle
-                            cx="100" cy="120" r={reaction ? 12 : 8}
-                            fill={coreColor}
-                            filter="url(#glow)"
-                            variants={pulseVariant}
-                            animate={reaction ? "active" : "idle"}
-                        />
-                    </motion.g>
-
-                    {/* HLAVA (Oči) */}
-                    <g transform="translate(0, -5)">
-                        <path d="M85 40 Q100 20 115 40 Q115 70 85 70 Q70 55 85 40 Z" fill="#111" stroke="#555" strokeWidth="2" />
-
-                        {/* Oči - Mrkání (Jednoduchá opacita) */}
-                        <motion.g
-                            animate={{ opacity: [1, 1, 0, 1] }} // Mrk
-                            transition={{ duration: 4, times: [0, 0.9, 0.95, 1], repeat: Infinity }}
-                        >
-                            <circle cx="92" cy="50" r="2" fill="#fff" filter="url(#glow)" />
-                            <circle cx="108" cy="50" r="2" fill="#fff" filter="url(#glow)" />
-                        </motion.g>
-                    </g>
-
-                    {/* PAŽE (Zobrazení síly) */}
-                    {stats.training > 0.2 && (
-                        <motion.path
-                            d="M60 120 Q40 180 50 220"
-                            stroke="#39FF14"
-                            strokeWidth={4 + (stats.training * 10)} // Tloustnutí svalů
-                            strokeLinecap="round"
-                            fill="none"
-                            initial={{ pathLength: 0 }}
-                            animate={{ pathLength: 1 }}
-                            transition={{ duration: 1 }}
-                        />
-                    )}
-                    {stats.training > 0.2 && (
-                        <motion.path
-                            d="M140 120 Q160 180 150 220"
-                            stroke="#39FF14"
-                            strokeWidth={4 + (stats.training * 10)}
-                            strokeLinecap="round"
-                            fill="none"
-                            initial={{ pathLength: 0 }}
-                            animate={{ pathLength: 1 }}
-                            transition={{ duration: 1 }}
-                        />
-                    )}
-
-                </svg>
-
-                {/* Level Indicator */}
-                <div className="level-badge">LVL {userLevel}</div>
-            </div>
+            {/* Level Badge */}
+            <div className="level-badge" style={{ bottom: '20px' }}>LVL {userLevel}</div>
         </div>
     );
 };

@@ -5,51 +5,25 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-bottom: 60px;
+    padding-bottom: 0;
+    /* Canvas handles spacing */
     margin-bottom: 10px;
-}
-
-.avatar-wrapper {
-    position: relative;
-    height: 35vh;
-    max-height: 400px;
-    min-height: 250px;
-    aspect-ratio: 1 / 2;
-    width: auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.grid-bg {
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    background-image:
-        radial-gradient(circle, rgba(57, 255, 20, 0.1) 1px, transparent 1px),
-        linear-gradient(0deg, transparent 49%, rgba(57, 255, 20, 0.05) 50%, transparent 51%),
-        linear-gradient(90deg, transparent 49%, rgba(57, 255, 20, 0.05) 50%, transparent 51%);
-    background-size: 20px 20px, 100% 100%, 100% 100%;
-    border-radius: 50%;
-    border: 1px dashed rgba(57, 255, 20, 0.2);
-    z-index: 0;
-    pointer-events: none;
-}
-
-.cyber-avatar-svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    z-index: 2;
-    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+    overflow: hidden;
+    /* Contain the 3D scene */
+    border-radius: 20px;
+    /* Rounded corners for the 'viewport' look */
+    background: #000;
+    /* Fallback */
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8);
+    /* Inner shadow for depth */
 }
 
 /* Chat Bubble */
 .cyber-chat-bubble {
     position: absolute;
-    top: 0;
-    right: 0;
-    background: rgba(0, 0, 0, 0.8);
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.6);
     border: 1px solid var(--primary);
     padding: 8px 12px;
     border-radius: 8px;
@@ -57,7 +31,6 @@
     z-index: 20;
     backdrop-filter: blur(4px);
     box-shadow: 0 0 10px rgba(57, 255, 20, 0.2);
-    transform: translate(20%, -20%);
 }
 
 .typing-text {
@@ -67,19 +40,23 @@
     line-height: 1.4;
     text-transform: uppercase;
     font-weight: bold;
+    text-shadow: 0 0 5px var(--primary);
 }
 
 /* Level Badge */
 .level-badge {
     position: absolute;
-    bottom: -10px;
-    background: #111;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(17, 17, 17, 0.8);
     color: #fff;
     border: 1px solid var(--primary);
-    padding: 4px 8px;
+    padding: 6px 12px;
     font-family: 'Courier New', monospace;
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     border-radius: 4px;
     z-index: 10;
-    box-shadow: 0 0 5px var(--primary);
+    box-shadow: 0 0 10px var(--primary);
+    backdrop-filter: blur(4px);
 }
