@@ -280,7 +280,7 @@ function App() {
 
       <div className="glass-panel main-panel">
 
-        <BodyWidget stats={currentStats} />
+        <BodyWidget stats={currentStats} isAllDone={isAllDone} />
         <PerformanceStats stats={currentStats} />
 
         <AddHabit onAdd={addHabit} />
