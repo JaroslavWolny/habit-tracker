@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from 'framer-motion';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { useDrag } from '@use-gesture/react';
-import { Howl } from 'howler';
 import './BodyWidget.css';
 
 // --- SVG PATHS ---
@@ -34,13 +33,6 @@ const PATHS = {
         thighLeft: "M75,190 L100,190 L95,250 L80,250 Z",
         thighRight: "M100,190 L125,190 L120,250 L105,250 Z"
     }
-};
-
-// --- SOUNDS (Placeholders) ---
-const sfx = {
-    hover: new Howl({ src: ['/sfx/hover.mp3'], volume: 0.2 }), // Placeholder paths
-    click: new Howl({ src: ['/sfx/click.mp3'], volume: 0.5 }),
-    clean: new Howl({ src: ['/sfx/static.mp3'], volume: 0.3, loop: true }),
 };
 
 // --- SUB-COMPONENTS ---
@@ -147,6 +139,9 @@ const AvatarConstruct = ({ stats, statusColor, isCritical, isOptimal, showMuscle
 };
 
 const BodyWidget = ({ stats, isAllDone = false, streak = 0 }) => {
+    // Safety check
+    if (!stats) return null;
+
     // --- STATE ---
     const [activePart, setActivePart] = useState(null);
     const [dirtLevel, setDirtLevel] = useState(stats.training < 0.3 ? 1 : 0); // 0 to 1
