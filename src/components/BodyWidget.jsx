@@ -82,6 +82,13 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                     <feGaussianBlur stdDeviation="6" result="blur" />
                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                 </filter>
+
+                {/* Hex Mesh Pattern for Muscles */}
+                <pattern id="hex-mesh" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                    <path d="M4 0 L8 2 L8 6 L4 8 L0 6 L0 2 Z" fill="none" stroke={isGodMode ? "#FFD700" : "var(--primary)"} strokeWidth="0.5" opacity="0.5" />
+                    <circle cx="4" cy="4" r="1" fill={isGodMode ? "#FFD700" : "var(--primary)"} opacity="0.8" />
+                </pattern>
+
                 <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
                     <stop offset="0%" stopColor="transparent" />
                     <stop offset="50%" stopColor={isGodMode ? "#FFD700" : "var(--primary)"} stopOpacity="0.8" />
@@ -107,14 +114,15 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                 />
             )}
 
-            {/* 3. NANO MUSCLES (Opacity based on Training) */}
-            <g fill={colorOverride || "var(--primary)"} stroke="none">
+            {/* 3. NANO MUSCLES (Pattern Fill) */}
+            <g stroke="none">
                 {Object.entries(PATHS.muscles).map(([key, d]) => (
                     <motion.path
                         key={key}
                         d={d}
+                        fill={colorOverride || "url(#hex-mesh)"}
                         initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.1 + (stats.training * 0.6) }}
+                        animate={{ opacity: 0.1 + (stats.training * 0.8) }}
                         onMouseEnter={(e) => setHoveredPart({ x: e.clientX, y: e.clientY - 40, text: `Muscles: ${Math.round(stats.training * 100)}%` })}
                         onMouseLeave={() => setHoveredPart(null)}
                     />
@@ -200,6 +208,12 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
 
     return (
         <div className={`body-widget-container ${isGlitch ? 'glitch-active' : ''}`} onClick={handleClick}>
+            {/* Medical Grid Background */}
+            <div className="medical-grid-bg" />
+
+            {/* Scanline Texture Overlay */}
+            <div className="scanline-texture" />
+
             {/* God Mode Background Geometry */}
             {isGodMode && <div className="god-mode-bg" />}
 
@@ -217,7 +231,7 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
 
             {/* Main Avatar */}
             <motion.div
-                className="body-silhouette-wrapper"
+                className="body-silhouette-wrapper breathing-anim"
                 animate={isGodMode ? { y: [0, -20, 0] } : { y: 0 }}
                 transition={isGodMode ? { duration: 4, repeat: Infinity, ease: "easeInOut" } : {}}
             >
@@ -230,14 +244,6 @@ const BodyWidget = ({ stats, isAllDone = false }) => {
                     <Tooltip x={hoveredPart.x} y={hoveredPart.y} text={hoveredPart.text} />
                 )}
             </AnimatePresence>
-
-            {/* Status Labels (Optional, kept for context) */}
-            <div className="body-status-labels" style={{ marginTop: '1rem', opacity: 0.8 }}>
-                <div className="status-label">
-                    <span className="label-dot" style={{ background: reactor.color, boxShadow: `0 0 10px ${reactor.color}` }}></span>
-                    {isGodMode ? 'GOD MODE' : (isGlitch ? 'CRITICAL' : 'SYSTEM ONLINE')}
-                </div>
-            </div>
         </div>
     );
 };
