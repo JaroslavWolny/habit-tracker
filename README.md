@@ -1,63 +1,66 @@
-# ⚡ OPTIMAL APP // NEURAL TWIN UPDATE
+# ⚡ OPTIMAL PROTOCOL // CYBER-CONSTRUCT UPDATE
 
 **THE WORLD'S FIRST LIVING HABIT PROTOCOL.**
 
-> "Most apps just track data. This one tracks your soul."
+> "Most apps just track data. This one builds your digital legacy."
 
-**OPTIMAL APP** is not a checklist. It is a **Cybernetic Life Simulator** linked directly to your daily discipline. You are the Operator. The avatar is your biological hardware. If you slack off, it decays. If you dominate, it evolves.
-
----
-
-## 🧠 THE NEURAL TWIN ENGINE (v3.0)
-
-We have transcended simple animation. Your avatar is now a **Neural Twin**—a digital organism that mirrors your state of being.
-
-### 1. 🦠 ORGANIC STATE MACHINE
-- **Plasma Flow Muscles:** Muscles aren't just shapes; they are filled with flowing, procedural energy (SVG Turbulence).
-- **Ghost Trails:** In high-performance states, your avatar moves so fast it leaves motion-blurred "ghost" trails.
-- **Heartbeat Sync:** The entire interface pulses at 60 BPM, mimicking a living organism.
-
-### 2. 🧼 TACTICAL MAINTENANCE
-- **Digital Entropy:** Neglect your habits, and "digital noise" accumulates on your screen.
-- **Gesture Cleaning:** You must physically **swipe and scrub** the dirt off your avatar to restore system visibility.
-- **AI Personality:** Your twin speaks.
-  - *Critical:* "SYSTEM FAILING. FEED ME DATA."
-  - *God Mode:* "I AM EFFICIENT. I AM UNSTOPPABLE."
-
-### 3. ⚡ HAPTIC RECHARGE MECHANIC
-- **Don't just click. Connect.**
-- **Hold-to-Charge:** To log a habit, you must physically "recharge" your avatar's core.
-- **Tactical Diagnostics:** Tap on any limb to run a system scan. See muscle density and armor integrity in real-time.
+**OPTIMAL PROTOCOL** is not a checklist. It is a **Cybernetic Life Simulator** linked directly to your daily discipline. You are the Operator. The **Cyber-Construct** is your digital twin. If you slack off, it glitches and decays. If you dominate, it evolves into a GODLIKE state.
 
 ---
 
-## ⚔️ CORE FEATURES
+## 🤖 THE CYBER-CONSTRUCT (v2.0)
 
-### ☢️ POWER GRID STATS
-- **Reactor Core Design:** Data visualization reimagined as a high-tech power plant.
-- **Monospace Precision:** Track **STR** (Strength), **REC** (Recovery), and **KNOW** (Knowledge).
+We have transcended simple 2D avatars. Your twin is now a fully procedural **3D Cyborg** built from geometric primitives and hard-light energy.
 
-### 📸 SHARE DOMINANCE
-- **Proof of Work:** Generate cinema-quality "Share Cards" to broadcast your status.
-- **Social Currency:** Show the world you belong to the 1%.
+### 1. 🧬 PROCEDURAL EVOLUTION
+- **Dynamic Geometry:** The Construct is built from raw data. It breathes, floats, and reacts to your presence.
+- **Status-Based Coloring:**
+  - **🟢 NEON GREEN:** Training Focus (Power)
+  - **🔵 CYBER BLUE:** Recovery Focus (Efficiency)
+  - **🟡 GOLD:** Knowledge Focus (Intellect)
+  - **🔴 CRITICAL RED:** System Failure (Low Integrity)
+
+### 2. ⚡ VISUAL FEEDBACK LOOP
+- **Glitch Mechanics:** Low stats cause the hologram to destabilize, grain, and glitch. Stress is visible.
+- **Pulse Waves:** Completing tasks sends shockwaves through the Construct's core.
+- **Responsive Camera:** The view automatically adjusts to keep your twin perfectly framed, no matter the device.
+
+---
+
+## 🏆 VIRAL IDENTITY SYSTEM
+
+Stop sharing boring checklists. Broadcast your **Status**.
+
+### 1. 🆔 TACTICAL SHARE CARD
+- **HUD Interface:** A futuristic diagnostic report designed for Instagram Stories (9:16).
+- **Rank System:**
+  - **GODLIKE (100%):** Maximum Efficiency. Neon Green Glow.
+  - **VANGUARD (80-99%):** High Performance. Cyber Blue.
+  - **OPERATIVE (40-79%):** System Stable. Gold.
+  - **ROOKIE (<40%):** Low Energy. Grey.
+- **Energy Ring:** A central reactor core displaying your current streak.
+
+### 2. 📊 TACTICAL DATA GRID
+- **Bento-Box Layout:** Clean, modular statistics.
+- **Auto-Focus:** The system automatically highlights your dominant category (Training, Supplements, Recovery, Knowledge).
 
 ---
 
 ## 🛠️ TECH STACK
 
 Built with the bleeding edge of web technology:
-- **React 18** - The Neural Network
+- **React 19** - The Neural Network
+- **Three.js / React Three Fiber** - The 3D Engine
+- **Post-Processing** - Bloom, Glitch, and Noise Effects
 - **Framer Motion** - The Physics Engine
-- **React Use Gesture** - Tactile Interaction
-- **Howler.js** - Auditory Feedback
 - **Vite** - Hypersonic Build Speeds
 
 ---
 
-## 🚀 DEPLOYMENT
+## 🚀 INITIALIZE PROTOCOL
 
 ```bash
-# Initialize Protocol
+# Install Dependencies
 npm install
 
 # Engage Systems (Dev)
@@ -69,5 +72,5 @@ npm run build
 
 ---
 
-**OPTIMAL APP // SYSTEM ONLINE**
-*Build Your Legacy.*
+**OPTIMAL PROTOCOL // SYSTEM ONLINE**
+*Initialize Your Twin.*
