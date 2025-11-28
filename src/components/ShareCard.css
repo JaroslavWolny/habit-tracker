@@ -127,7 +127,7 @@
     backdrop-filter: blur(10px);
 }
 
-.streak-val {
+.share-card-v2 .streak-val {
     font-size: 160px;
     font-weight: 800;
     line-height: 1;

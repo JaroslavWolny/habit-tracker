@@ -52,7 +52,7 @@
     animation: flicker 3s infinite alternate;
 }
 
-.streak-val {
+.streak-minimal .streak-val {
     /* Typography - Data look */
     font-family: 'Share Tech Mono', monospace;
     /* Technický font */
