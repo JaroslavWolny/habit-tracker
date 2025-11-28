@@ -58,7 +58,7 @@ const CyborgModel = ({ stats, integrity }) => {
     const finalColor = integrity < 0.4 ? '#ff003c' : baseColor;
 
     return (
-        <group>
+        <group position={[0, -0.8, 0]}>
             {/* HEAD - Brain Core */}
             <CyberPwrt position={[0, 1.6, 0]} args={[0.25, 1]} type="sphere" color={finalColor} speed={2} />
 
