@@ -48,9 +48,9 @@ const CyberPwrt = ({ position, args, type = "box", color, speed = 1, wireframe =
 const CyborgModel = ({ stats, integrity }) => {
     // Dynamická barva podle dominantního statu
     const baseColor = useMemo(() => {
-        if (stats.training > stats.recovery && stats.training > stats.know) return '#39FF14'; // Neon Green (Power)
-        if (stats.recovery > stats.training && stats.recovery > stats.know) return '#39D1FF'; // Cyber Blue (Recovery)
-        if (stats.know > stats.training && stats.know > stats.recovery) return '#FFD139'; // Gold (Knowledge)
+        if (stats.training > stats.recovery && stats.training > stats.knowledge) return '#39FF14'; // Neon Green (Power)
+        if (stats.recovery > stats.training && stats.recovery > stats.knowledge) return '#39D1FF'; // Cyber Blue (Recovery)
+        if (stats.knowledge > stats.training && stats.knowledge > stats.recovery) return '#FFD139'; // Gold (Knowledge)
         return '#ffffff'; // Neutral
     }, [stats]);
 
@@ -77,13 +77,22 @@ const CyborgModel = ({ stats, integrity }) => {
 };
 
 const BodyWidget = ({ stats, userLevel = 1 }) => {
-    // Výpočet "zdraví" hologramu
-    const integrity = stats ? (stats.training + stats.nutrition + stats.recovery + stats.know) / 4 : 0; // Průměr
+    // Výpočet "zdraví" hologramu - nyní používáme správné klíče (0-1)
+    const integrity = stats ? (stats.training + stats.nutrition + stats.recovery + stats.knowledge) / 4 : 0;
 
     // Zprávy systému (Tamagotchi element)
     const [message, setMessage] = useState("SYSTEM ONLINE");
+    const [surge, setSurge] = useState(false);
+    const prevIntegrity = useRef(integrity);
 
+    // Detekce změny integrity pro efekt "Power Surge"
     useEffect(() => {
+        if (integrity > prevIntegrity.current) {
+            setSurge(true);
+            setTimeout(() => setSurge(false), 1000); // 1s surge
+        }
+        prevIntegrity.current = integrity;
+
         if (integrity < 0.3) setMessage("CRITICAL ERROR. FEED ME DATA.");
         else if (integrity < 0.6) setMessage("SYSTEMS STABILIZING...");
         else if (integrity < 0.9) setMessage("OPTIMAL PERFORMANCE.");
@@ -118,16 +127,16 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
             >
                 {/* Osvětlení */}
                 <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={1} color={glowColor} />
+                <pointLight position={[10, 10, 10]} intensity={surge ? 3 : 1} color={glowColor} />
                 <pointLight position={[-10, -10, -10]} intensity={0.5} color="blue" />
 
                 {/* The Character - Floating Animation */}
-                <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
-                    <CyborgModel stats={stats || { training: 0, nutrition: 0, recovery: 0, know: 0 }} integrity={integrity} />
+                <Float speed={surge ? 5 : 2} rotationIntensity={surge ? 0.5 : 0.2} floatIntensity={0.5}>
+                    <CyborgModel stats={stats || { training: 0, nutrition: 0, recovery: 0, knowledge: 0 }} integrity={integrity} />
                 </Float>
 
                 {/* Particles around */}
-                <Sparkles count={50} scale={3} size={2} speed={0.4} opacity={0.5} color={glowColor} />
+                <Sparkles count={surge ? 100 : 50} scale={3} size={surge ? 4 : 2} speed={surge ? 2 : 0.4} opacity={0.5} color={glowColor} />
 
                 {/* Post Processing Effects */}
                 <EffectComposer disableNormalPass>
@@ -135,7 +144,7 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
                     <Bloom
                         luminanceThreshold={0.2}
                         mipmapBlur
-                        intensity={1.5}
+                        intensity={surge ? 3 : 1.5}
                         radius={0.6}
                     />
 
@@ -160,7 +169,7 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
                     minPolarAngle={Math.PI / 3}
                     maxPolarAngle={Math.PI / 1.5}
                     autoRotate
-                    autoRotateSpeed={1.0}
+                    autoRotateSpeed={surge ? 5 : 1.0}
                 />
             </Canvas>
         </div>

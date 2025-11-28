@@ -236,6 +236,7 @@ function App() {
     stats.training = categories.training.total > 0 ? categories.training.done / categories.training.total : 0;
     stats.nutrition = categories.nutrition.total > 0 ? categories.nutrition.done / categories.nutrition.total : 0;
     stats.recovery = categories.recovery.total > 0 ? categories.recovery.done / categories.recovery.total : 0;
+    stats.knowledge = categories.knowledge.total > 0 ? categories.knowledge.done / categories.knowledge.total : 0;
 
     // Performance Stats (0-100%)
     // STR = Training + Knowledge (Discipline)
@@ -248,11 +249,7 @@ function App() {
     const recDone = categories.recovery.done + categories.nutrition.done;
     stats.rec = recTotal > 0 ? (recDone / recTotal) * 100 : 0;
 
-    // KNOW = Knowledge (Focus) - Or maybe map differently? 
-    // Prompt says: STR (Training), REC (Sleep/Food), KNOW (Study).
-    // Let's map strictly:
-    stats.str = categories.training.total > 0 ? (categories.training.done / categories.training.total) * 100 : 0;
-    stats.rec = (categories.recovery.total + categories.nutrition.total) > 0 ? ((categories.recovery.done + categories.nutrition.done) / (categories.recovery.total + categories.nutrition.total)) * 100 : 0;
+    // KNOW = Knowledge (Focus)
     stats.know = categories.knowledge.total > 0 ? (categories.knowledge.done / categories.knowledge.total) * 100 : 0;
 
     return stats;
