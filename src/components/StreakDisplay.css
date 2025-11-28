@@ -1,104 +1,50 @@
-/* Tactical Streak Badge */
+/* Minimal Streak Display */
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
-.streak-badge {
+.streak-minimal {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: rgba(10, 10, 10, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 6px 16px 6px 8px;
-    border-radius: 100px;
-    /* Pill shape */
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Subtle scanline effect inside the badge */
-.streak-badge::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
-    transform: skewX(-20deg) translateX(-150%);
-    animation: shine 4s infinite;
-}
-
-@keyframes shine {
-
-    0%,
-    80% {
-        transform: skewX(-20deg) translateX(-150%);
-    }
-
-    100% {
-        transform: skewX(-20deg) translateX(150%);
-    }
-}
-
-.streak-icon-zone {
-    width: 36px;
-    height: 36px;
-    background: radial-gradient(circle at center, rgba(255, 100, 0, 0.2), transparent 70%);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 165, 0, 0.2);
-    position: relative;
+    gap: 8px;
+    padding: 4px 12px;
+    /* Optional: very subtle glass background to keep it readable but minimal */
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
 }
 
 .streak-fire {
-    font-size: 1.2rem;
-    filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.8));
+    font-size: 1.5rem;
+    /* Matches the visual weight of the text */
+    filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.6));
     animation: pulseFire 2s infinite ease-in-out;
-    transform-origin: center bottom;
-}
-
-.streak-data-zone {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     line-height: 1;
 }
 
 .streak-val {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 1.4rem;
+    font-size: 1.8rem;
+    /* Large and clear, matching H1 size */
     font-weight: 700;
     color: #fff;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    line-height: 1;
     letter-spacing: 1px;
-}
-
-.streak-label {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 0.6rem;
-    color: rgba(255, 255, 255, 0.5);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-top: 2px;
 }
 
 @keyframes pulseFire {
     0% {
         transform: scale(1);
-        filter: drop-shadow(0 0 5px rgba(255, 140, 0, 0.6));
+        filter: drop-shadow(0 0 5px rgba(255, 140, 0, 0.4));
     }
 
     50% {
-        transform: scale(1.15);
-        filter: drop-shadow(0 0 12px rgba(255, 100, 0, 0.9));
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 12px rgba(255, 100, 0, 0.8));
     }
 
     100% {
         transform: scale(1);
-        filter: drop-shadow(0 0 5px rgba(255, 140, 0, 0.6));
+        filter: drop-shadow(0 0 5px rgba(255, 140, 0, 0.4));
     }
 }

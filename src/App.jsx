@@ -266,14 +266,9 @@ function App() {
         <div className="app-brand">
           <h1>OPTIMAL APP</h1>
         </div>
-        <div className="streak-badge">
-          <div className="streak-icon-zone">
-            <div className="streak-fire">🔥</div>
-          </div>
-          <div className="streak-data-zone">
-            <span className="streak-val">{streak}</span>
-            <span className="streak-label">DAY STREAK</span>
-          </div>
+        <div className="streak-minimal">
+          <span className="streak-fire">🔥</span>
+          <span className="streak-val">{streak}</span>
         </div>
       </div>
 
