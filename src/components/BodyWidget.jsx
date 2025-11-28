@@ -45,14 +45,15 @@ const CyberPwrt = ({ position, args, type = "box", color, speed = 1, wireframe =
     );
 };
 
-const CyborgModel = ({ stats, integrity }) => {
+const CyborgModel = ({ stats, integrity, isGodMode }) => {
     // Dynamická barva podle dominantního statu
     const baseColor = useMemo(() => {
+        if (isGodMode) return '#FFD700'; // GOLD for God Mode
         if (stats.training > stats.recovery && stats.training > stats.knowledge) return '#39FF14'; // Neon Green (Power)
         if (stats.recovery > stats.training && stats.recovery > stats.knowledge) return '#39D1FF'; // Cyber Blue (Recovery)
         if (stats.knowledge > stats.training && stats.knowledge > stats.recovery) return '#FFD139'; // Gold (Knowledge)
         return '#ffffff'; // Neutral
-    }, [stats]);
+    }, [stats, isGodMode]);
 
     // Pokud je integrita nízká, barva rudne
     const finalColor = integrity < 0.4 ? '#ff003c' : baseColor;
@@ -60,18 +61,18 @@ const CyborgModel = ({ stats, integrity }) => {
     return (
         <group position={[0, -0.8, 0]}>
             {/* HEAD - Brain Core */}
-            <CyberPwrt position={[0, 1.6, 0]} args={[0.25, 1]} type="sphere" color={finalColor} speed={2} />
+            <CyberPwrt position={[0, 1.6, 0]} args={[0.25, 1]} type="sphere" color={finalColor} speed={isGodMode ? 5 : 2} />
 
             {/* TORSO - Main Reactor */}
-            <CyberPwrt position={[0, 0.8, 0]} args={[0.4, 0.6, 0.3]} type="box" color={finalColor} speed={1.5} />
+            <CyberPwrt position={[0, 0.8, 0]} args={[0.4, 0.6, 0.3]} type="box" color={finalColor} speed={isGodMode ? 4 : 1.5} />
 
             {/* ARMS */}
-            <CyberPwrt position={[-0.5, 0.8, 0]} args={[0.1, 0.6, 4, 8]} type="capsule" color={finalColor} speed={1.2} />
-            <CyberPwrt position={[0.5, 0.8, 0]} args={[0.1, 0.6, 4, 8]} type="capsule" color={finalColor} speed={1.2} />
+            <CyberPwrt position={[-0.5, 0.8, 0]} args={[0.1, 0.6, 4, 8]} type="capsule" color={finalColor} speed={isGodMode ? 3 : 1.2} />
+            <CyberPwrt position={[0.5, 0.8, 0]} args={[0.1, 0.6, 4, 8]} type="capsule" color={finalColor} speed={isGodMode ? 3 : 1.2} />
 
             {/* LEGS */}
-            <CyberPwrt position={[-0.2, 0, 0]} args={[0.12, 0.8, 4, 8]} type="capsule" color={finalColor} speed={0.8} />
-            <CyberPwrt position={[0.2, 0, 0]} args={[0.12, 0.8, 4, 8]} type="capsule" color={finalColor} speed={0.8} />
+            <CyberPwrt position={[-0.2, 0, 0]} args={[0.12, 0.8, 4, 8]} type="capsule" color={finalColor} speed={isGodMode ? 2 : 0.8} />
+            <CyberPwrt position={[0.2, 0, 0]} args={[0.12, 0.8, 4, 8]} type="capsule" color={finalColor} speed={isGodMode ? 2 : 0.8} />
         </group>
     );
 };
@@ -79,6 +80,7 @@ const CyborgModel = ({ stats, integrity }) => {
 const BodyWidget = ({ stats, userLevel = 1 }) => {
     // Výpočet "zdraví" hologramu - nyní používáme správné klíče (0-1)
     const integrity = stats ? (stats.training + stats.nutrition + stats.recovery + stats.knowledge) / 4 : 0;
+    const isGodMode = integrity >= 0.9;
 
     // Zprávy systému (Tamagotchi element)
     const [message, setMessage] = useState("SYSTEM ONLINE");
@@ -100,7 +102,9 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
     }, [integrity]);
 
     // Barva světla pro scénu
-    const glowColor = integrity < 0.4 ? '#ff003c' : '#39FF14';
+    let glowColor = '#39FF14';
+    if (integrity < 0.4) glowColor = '#ff003c';
+    if (isGodMode) glowColor = '#FFD700'; // Golden Glow
 
     return (
         <div className="body-widget-container" style={{ position: 'relative', overflow: 'hidden' }}>
@@ -108,13 +112,13 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
             {/* UI Overlay */}
             <div className="cyber-overlay">
                 <div className="status-line">
-                    <span className="blink-dot" style={{ background: glowColor }}></span>
+                    <span className="blink-dot" style={{ background: glowColor, boxShadow: isGodMode ? `0 0 10px ${glowColor}` : 'none' }}></span>
                     {message}
                 </div>
                 <div className="energy-bar-wrapper">
                     <div className="energy-label">SYNC RATE</div>
                     <div className="energy-bar">
-                        <div className="energy-fill" style={{ width: `${integrity * 100}%`, background: glowColor }}></div>
+                        <div className="energy-fill" style={{ width: `${integrity * 100}%`, background: glowColor, boxShadow: isGodMode ? `0 0 20px ${glowColor}` : 'none' }}></div>
                     </div>
                 </div>
             </div>
@@ -126,26 +130,38 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
                 gl={{ antialias: false, alpha: true }}
             >
                 {/* Osvětlení */}
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={surge ? 3 : 1} color={glowColor} />
+                <ambientLight intensity={isGodMode ? 1.5 : 0.5} />
+                <pointLight position={[10, 10, 10]} intensity={isGodMode ? 5 : (surge ? 3 : 1)} color={glowColor} />
                 <pointLight position={[-10, -10, -10]} intensity={0.5} color="blue" />
 
                 {/* The Character - Floating Animation */}
-                <Float speed={surge ? 5 : 2} rotationIntensity={surge ? 0.5 : 0.2} floatIntensity={0.5}>
-                    <CyborgModel stats={stats || { training: 0, nutrition: 0, recovery: 0, knowledge: 0 }} integrity={integrity} />
+                <Float
+                    speed={isGodMode ? 3 : (surge ? 5 : 2)}
+                    rotationIntensity={isGodMode ? 1.5 : (surge ? 0.5 : 0.2)}
+                    floatIntensity={isGodMode ? 1.5 : 0.5}
+                    floatingRange={isGodMode ? [-0.2, 0.2] : [-0.1, 0.1]}
+                >
+                    <CyborgModel stats={stats || { training: 0, nutrition: 0, recovery: 0, knowledge: 0 }} integrity={integrity} isGodMode={isGodMode} />
                 </Float>
 
                 {/* Particles around */}
-                <Sparkles count={surge ? 100 : 50} scale={3} size={surge ? 4 : 2} speed={surge ? 2 : 0.4} opacity={0.5} color={glowColor} />
+                <Sparkles
+                    count={isGodMode ? 150 : (surge ? 100 : 50)}
+                    scale={isGodMode ? 6 : 3}
+                    size={isGodMode ? 5 : (surge ? 4 : 2)}
+                    speed={isGodMode ? 0.2 : (surge ? 2 : 0.4)}
+                    opacity={isGodMode ? 0.8 : 0.5}
+                    color={glowColor}
+                />
 
                 {/* Post Processing Effects */}
                 <EffectComposer disableNormalPass>
                     {/* Bloom - Zářící efekt */}
                     <Bloom
-                        luminanceThreshold={0.2}
+                        luminanceThreshold={0.1}
                         mipmapBlur
-                        intensity={surge ? 3 : 1.5}
-                        radius={0.6}
+                        intensity={isGodMode ? 2.5 : (surge ? 3 : 1.5)}
+                        radius={isGodMode ? 0.8 : 0.6}
                     />
 
                     {/* Noise - Filmové zrno pro realismus */}
@@ -169,7 +185,7 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
                     minPolarAngle={Math.PI / 3}
                     maxPolarAngle={Math.PI / 1.5}
                     autoRotate
-                    autoRotateSpeed={surge ? 5 : 1.0}
+                    autoRotateSpeed={isGodMode ? 2.0 : (surge ? 5 : 1.0)}
                 />
             </Canvas>
         </div>
