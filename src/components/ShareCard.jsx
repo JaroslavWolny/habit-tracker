@@ -3,165 +3,125 @@ import './ShareCard.css';
 import { QRCodeSVG } from 'qrcode.react';
 
 const ShareCard = forwardRef(({ streak, habits, todayHabits, history }, ref) => {
-    // Determine dominant category for dynamic background
-    const catList = todayHabits.map(h => h.category || 'training');
-    const dominantCategory = catList.sort((a, b) =>
-        catList.filter(v => v === a).length - catList.filter(v => v === b).length
-    ).pop() || 'training';
+    // 1. Calculate Rank & Stats
+    const totalHabits = todayHabits.length;
+    const completedHabits = todayHabits.filter(h => h.completed).length;
+    const completionRate = totalHabits > 0 ? completedHabits / totalHabits : 0;
 
-    const categoryColors = {
-        training: { from: '#0f380f', to: '#000000', accent: '#39FF14', icon: '🏋️', label: 'TRAINING' },
-        nutrition: { from: '#380f2e', to: '#000000', accent: '#FF39D1', icon: '💊', label: 'SUPPLEMENTS' },
-        recovery: { from: '#0f2e38', to: '#000000', accent: '#39D1FF', icon: '💤', label: 'RECOVERY' },
-        knowledge: { from: '#382e0f', to: '#000000', accent: '#FFD139', icon: '🧠', label: 'KNOWLEDGE' },
-        default: { from: '#1a1a1a', to: '#000000', accent: '#ffffff', icon: '⚡', label: 'GENERAL' }
-    };
+    let rank = { label: 'UNSTABLE', grade: 'C', color: 'var(--danger)', glow: 'rgba(239, 68, 68, 0.5)' };
+    if (completionRate >= 1) {
+        rank = { label: 'OPTIMAL STATE', grade: 'S', color: 'var(--neon-green)', glow: 'rgba(57, 255, 20, 0.5)' };
+    } else if (completionRate >= 0.8) {
+        rank = { label: 'SYSTEM STABLE', grade: 'A', color: 'var(--cyber-blue)', glow: 'rgba(57, 209, 255, 0.5)' };
+    } else if (completionRate >= 0.5) {
+        rank = { label: 'ACCEPTABLE', grade: 'B', color: 'var(--gold)', glow: 'rgba(255, 209, 57, 0.5)' };
+    }
 
-    const theme = categoryColors[dominantCategory] || categoryColors.default;
-
-    // Calculate Pillar Stats
-    const pillars = {
-        training: { ...categoryColors.training, total: 0, done: 0 },
-        nutrition: { ...categoryColors.nutrition, total: 0, done: 0 },
-        recovery: { ...categoryColors.recovery, total: 0, done: 0 },
-        knowledge: { ...categoryColors.knowledge, total: 0, done: 0 }
-    };
-
+    // 2. Determine Focus (Dominant Category)
+    const catCounts = {};
     todayHabits.forEach(h => {
-        const cat = h.category || 'training';
-        if (pillars[cat]) {
-            pillars[cat].total++;
-            if (h.completed) pillars[cat].done++;
-        }
+        const cat = h.category || 'general';
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
     });
 
-    // Generate last 30 days heatmap data
-    const getHeatmapData = () => {
-        const days = [];
-        const today = new Date();
-        for (let i = 29; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(today.getDate() - i);
-            const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const sortedCats = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+    const focusCategory = sortedCats.length > 0 ? sortedCats[0][0].toUpperCase() : 'GENERAL';
 
-            const completedIds = history?.[dateStr] || [];
-            // Check if ALL habits active on that day were done. 
-            // Simplified: If > 0 done, partial. If count matches habits length (approx), perfect.
-            // Ideally we'd check historical habit count, but for viz this is okay.
-            let status = 0;
-            if (completedIds.length > 0) status = 1;
-            // Heuristic for perfect day in history without full historical snapshot:
-            if (completedIds.length >= habits.length && habits.length > 0) status = 2;
-
-            days.push({ date: dateStr, status });
-        }
-        return days;
+    const categoryIcons = {
+        TRAINING: '🏋️',
+        NUTRITION: '💊',
+        RECOVERY: '💤',
+        KNOWLEDGE: '🧠',
+        GENERAL: '⚡'
     };
 
-    const heatmapData = getHeatmapData();
+    // 3. Date Formatting
+    const dateObj = new Date();
+    const dateStr = `${dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()} ${dateObj.getDate()} // ${dateObj.getFullYear()}`;
 
     return (
-        <div ref={ref} className="share-card-bento" style={{
-            background: `linear-gradient(135deg, ${theme.from} 0%, ${theme.to} 100%)`
-        }}>
-            <div className="noise-overlay"></div>
+        <div ref={ref} className="share-card-hud">
+            {/* A. Background & Atmosphere */}
+            <div className="hud-grid-overlay"></div>
+            <div className="hud-glow-top-left"></div>
+            <div className="hud-glow-bottom-right"></div>
+            <div className="hud-scanline"></div>
 
-            <div className="bento-content">
-                {/* Header */}
-                <div className="bento-header">
-                    <div className="app-badge">
-                        <span className="app-icon">⚡</span>
-                        <span className="app-name">OPTIMAL APP</span>
+            <div className="hud-content">
+                {/* B. Header */}
+                <div className="hud-header">
+                    <div className="brand-pill">
+                        <span className="brand-icon">⚡</span>
+                        <span className="brand-text">OPTIMAL PROTOCOL</span>
                     </div>
-                    <div className="date-display">
-                        {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()}
+                    <div className="hud-date">{dateStr}</div>
+                </div>
+
+                {/* C. Hero Section: Daily Rank */}
+                <div className="hud-hero">
+                    <div className="rank-circle-container">
+                        <div className="rank-circle-glow" style={{ boxShadow: `0 0 60px ${rank.glow}, inset 0 0 30px ${rank.glow}` }}></div>
+                        <div className="rank-circle-border" style={{ borderColor: rank.color }}></div>
+                        <div className="rank-grade" style={{ color: rank.color, textShadow: `0 0 20px ${rank.color}` }}>
+                            {rank.grade}
+                        </div>
+                    </div>
+                    <div className="rank-label" style={{ color: rank.color }}>
+                        {rank.label}
+                    </div>
+                    <div className="rank-sub">
+                        /// SYNC RATE: {Math.round(completionRate * 100)}% ///
                     </div>
                 </div>
 
-                {/* Hero Streak */}
-                <div className="bento-hero">
-                    <div className="hero-ring-bg"></div>
-                    <div className="hero-value" style={{ textShadow: `0 0 40px ${theme.accent}66` }}>
-                        {streak}
+                {/* D. Stats Grid (Bento) */}
+                <div className="hud-stats-grid">
+                    <div className="hud-stat-box">
+                        <div className="stat-label">CURRENT STREAK</div>
+                        <div className="stat-value">
+                            {streak} <span className="stat-unit">DAYS</span>
+                            {streak > 7 && <span className="stat-flame">🔥</span>}
+                        </div>
                     </div>
-                    <div className="hero-label">DAY STREAK</div>
-                    {streak > 30 && <div className="hero-flame">🔥 UNSTOPPABLE</div>}
-                </div>
-
-                {/* Pillars Grid (Replaces Habit List) */}
-                <div className="pillars-grid-section">
-                    <div className="section-label">DAILY PROTOCOL</div>
-                    <div className="pillars-grid">
-                        {Object.entries(pillars).map(([key, data]) => {
-                            const percent = data.total > 0 ? (data.done / data.total) * 100 : 0;
-                            const isDone = data.total > 0 && data.done === data.total;
-
-                            return (
-                                <div key={key} className="pillar-card" style={{
-                                    borderColor: isDone ? data.accent : 'rgba(255,255,255,0.1)',
-                                    background: isDone ? `${data.accent}15` : 'rgba(255,255,255,0.03)'
-                                }}>
-                                    <div className="pillar-icon">{data.icon}</div>
-                                    <div className="pillar-info">
-                                        <div className="pillar-name" style={{ color: isDone ? data.accent : 'white' }}>{data.label}</div>
-                                        <div className="pillar-stat">
-                                            {data.total === 0 ? 'REST' : `${data.done}/${data.total} DONE`}
-                                        </div>
-                                    </div>
-                                    {isDone && <div className="pillar-check" style={{ color: data.accent }}>✓</div>}
-
-                                    {/* Progress Bar */}
-                                    <div className="pillar-progress-bg">
-                                        <div className="pillar-progress-fill" style={{
-                                            width: `${percent}%`,
-                                            backgroundColor: data.accent
-                                        }}></div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                    <div className="hud-stat-box">
+                        <div className="stat-label">PRIMARY FOCUS</div>
+                        <div className="stat-value-icon">
+                            {categoryIcons[focusCategory] || '⚡'} {focusCategory}
+                        </div>
                     </div>
                 </div>
 
-                {/* Heatmap (Calendar) */}
-                <div className="bento-grid-item heatmap-section">
-                    <div className="section-label">CONSISTENCY (30 DAYS)</div>
-                    <div className="heatmap-grid">
-                        {heatmapData.map((day, i) => (
-                            <div
-                                key={i}
-                                className={`heatmap-cell status-${day.status}`}
-                                style={{
-                                    backgroundColor: day.status === 2 ? theme.accent :
-                                        day.status === 1 ? `${theme.accent}40` :
-                                            'rgba(255,255,255,0.1)'
-                                }}
-                            />
+                {/* E. Protocol Log */}
+                <div className="hud-log-section">
+                    <div className="log-header">{">>"} PROTOCOL LOG_</div>
+                    <div className="log-list">
+                        {todayHabits.slice(0, 6).map((habit, i) => (
+                            <div key={habit.id || i} className={`log-item ${habit.completed ? 'completed' : 'pending'}`}>
+                                <span className="log-prefix">{habit.completed ? '[x]' : '[ ]'}</span>
+                                <span className="log-text">{habit.text}</span>
+                            </div>
                         ))}
+                        {todayHabits.length > 6 && (
+                            <div className="log-more">...and {todayHabits.length - 6} more modules</div>
+                        )}
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="bento-footer">
-                    <div className="footer-left">
-                        <div className="viral-hook">
-                            BEAT MY STREAK ON<br />
-                            <span style={{ color: theme.accent }}>OPTIMAL APP</span>
-                        </div>
-                        <div className="download-cta">
-                            Available on iOS & Android
-                        </div>
+                {/* F. Footer (Acquisition) */}
+                <div className="hud-footer">
+                    <div className="footer-cta">
+                        <div className="cta-title">INITIALIZE YOUR TWIN</div>
+                        <div className="cta-sub">Available on iOS & Android</div>
                     </div>
-                    <div className="footer-right">
-                        <div className="qr-code-wrapper">
-                            <QRCodeSVG
-                                value="https://optimalapp.com/download"
-                                size={80}
-                                bgColor="transparent"
-                                fgColor="#ffffff"
-                                level="L"
-                            />
-                        </div>
+                    <div className="footer-qr">
+                        <QRCodeSVG
+                            value="https://optimalapp.com/download"
+                            size={100}
+                            bgColor="#ffffff"
+                            fgColor="#000000"
+                            level="L"
+                            includeMargin={true}
+                        />
                     </div>
                 </div>
             </div>
