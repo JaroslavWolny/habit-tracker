@@ -1,23 +1,23 @@
-/* Minimal Streak Display - Aligned with Header */
+/* Minimal Streak Display - Perfectly Scaled */
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
 .streak-minimal {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 6px 12px;
+    gap: 8px;
+    padding: 6px 14px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    border-radius: 10px;
     backdrop-filter: blur(4px);
     box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.02);
-    /* Ensure it doesn't stretch */
+    /* Ensure it aligns with the text baseline visually */
     align-self: center;
 }
 
 .streak-fire {
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.8));
     animation: pulseFire 2s infinite ease-in-out;
     display: flex;
@@ -27,14 +27,13 @@
 
 .streak-val {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 1.75rem;
-    /* Matches H1 size exactly */
+    /* 1.5rem is slightly smaller than the 1.75rem H1, allowing the box padding to make the total height match the H1 visually */
+    font-size: 1.5rem;
     font-weight: 700;
     color: #fff;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     line-height: 1;
     letter-spacing: 1px;
-    /* Optical alignment */
     transform: translateY(1px);
 }
 
