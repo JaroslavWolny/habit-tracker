@@ -56,8 +56,8 @@
     /* Typography - Data look */
     font-family: 'Share Tech Mono', monospace;
     /* Technický font */
-    font-size: 1.2rem;
-    /* Velikost 19-20px - akorát k H1 */
+    font-size: 1rem;
+    /* Zmenšeno pro lepší fit do 38px rámečku */
     font-weight: 700;
 
     /* Barva a textura */
