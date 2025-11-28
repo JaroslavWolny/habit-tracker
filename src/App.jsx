@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
+import './components/StreakDisplay.css';
 import confetti from 'canvas-confetti';
 import HabitList from './components/HabitList';
 import AddHabit from './components/AddHabit';
@@ -265,15 +266,9 @@ function App() {
         <div className="app-brand">
           <h1>OPTIMAL APP</h1>
         </div>
-        <div className="streak-display-v2">
-          <div className="streak-fire-wrapper">
-            <span className="streak-fire">🔥</span>
-            <div className="streak-glow"></div>
-          </div>
-          <div className="streak-meta">
-            <span className="streak-val">{streak}</span>
-            <span className="streak-lbl">DAYS</span>
-          </div>
+        <div className="streak-display-compact">
+          <span className="streak-fire">🔥</span>
+          <span className="streak-val">{streak}</span>
         </div>
       </div>
 

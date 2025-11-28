@@ -1,0 +1,39 @@
+/* Compact Streak Display */
+.streak-display-compact {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.streak-fire {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 0 5px rgba(255, 165, 0, 0.6));
+    animation: pulseFire 2s infinite ease-in-out;
+}
+
+.streak-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+}
+
+@keyframes pulseFire {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
