@@ -1,129 +1,137 @@
 import React, { forwardRef } from 'react';
 import './ShareCard.css';
-import { QRCodeSVG } from 'qrcode.react';
 
 const ShareCard = forwardRef(({ streak, habits, todayHabits, history }, ref) => {
-    // 1. Calculate Rank & Stats
-    const totalHabits = todayHabits.length;
-    const completedHabits = todayHabits.filter(h => h.completed).length;
-    const completionRate = totalHabits > 0 ? completedHabits / totalHabits : 0;
+    // 1. Výpočet skóre
+    const totalHabits = habits.length;
+    const completedToday = todayHabits.filter(h => h.completed).length;
+    const completionRate = totalHabits > 0 ? (completedToday / totalHabits) : 0;
 
-    let rank = { label: 'UNSTABLE', grade: 'C', color: 'var(--danger)', glow: 'rgba(239, 68, 68, 0.5)' };
-    if (completionRate >= 1) {
-        rank = { label: 'OPTIMAL STATE', grade: 'S', color: 'var(--neon-green)', glow: 'rgba(57, 255, 20, 0.5)' };
+    // 2. Nová logika STATUSŮ (Identity System)
+    let statusTitle = 'ROOKIE';
+    let statusColor = '#94a3b8'; // Grey
+    let statusGlow = '0 0 0 transparent';
+    let subMessage = 'SYSTEM OFFLINE';
+
+    if (completionRate === 1) {
+        statusTitle = 'GODLIKE';
+        statusColor = '#39FF14'; // Neon Green
+        statusGlow = '0 0 40px rgba(57, 255, 20, 0.6)';
+        subMessage = 'MAXIMUM EFFICIENCY';
     } else if (completionRate >= 0.8) {
-        rank = { label: 'SYSTEM STABLE', grade: 'A', color: 'var(--cyber-blue)', glow: 'rgba(57, 209, 255, 0.5)' };
-    } else if (completionRate >= 0.5) {
-        rank = { label: 'ACCEPTABLE', grade: 'B', color: 'var(--gold)', glow: 'rgba(255, 209, 57, 0.5)' };
+        statusTitle = 'VANGUARD';
+        statusColor = '#39D1FF'; // Cyan
+        statusGlow = '0 0 30px rgba(57, 209, 255, 0.4)';
+        subMessage = 'HIGH PERFORMANCE';
+    } else if (completionRate >= 0.4) {
+        statusTitle = 'OPERATIVE';
+        statusColor = '#FFD139'; // Gold
+        statusGlow = '0 0 20px rgba(255, 209, 57, 0.3)';
+        subMessage = 'SYSTEM STABLE';
+    } else if (completionRate > 0) {
+        statusTitle = 'DRIFTER';
+        statusColor = '#ff6b6b'; // Red
+        subMessage = 'LOW ENERGY';
     }
 
-    // 2. Determine Focus (Dominant Category)
-    const catCounts = {};
-    todayHabits.forEach(h => {
-        const cat = h.category || 'general';
-        catCounts[cat] = (catCounts[cat] || 0) + 1;
-    });
-
-    const sortedCats = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
-    const focusCategory = sortedCats.length > 0 ? sortedCats[0][0].toUpperCase() : 'GENERAL';
-
-    const categoryIcons = {
-        TRAINING: '🏋️',
-        NUTRITION: '💊',
-        RECOVERY: '💤',
-        KNOWLEDGE: '🧠',
-        GENERAL: '⚡'
+    // Kategorizace pro vizuál (s opravou Nutrition -> Supplements)
+    const categories = {
+        training: { label: 'TRAINING', count: 0, done: 0, color: '#39FF14' },
+        nutrition: { label: 'SUPPLEMENTS', count: 0, done: 0, color: '#FF39D1' }, // RENAMED
+        recovery: { label: 'RECOVERY', count: 0, done: 0, color: '#39D1FF' },
+        knowledge: { label: 'KNOWLEDGE', count: 0, done: 0, color: '#FFD139' }
     };
 
-    // 3. Date Formatting
-    const dateObj = new Date();
-    const dateStr = `${dateObj.toLocaleDateString('en-US', { month: 'short' }).toUpperCase()} ${dateObj.getDate()} // ${dateObj.getFullYear()}`;
+    todayHabits.forEach(h => {
+        const cat = (h.category || 'training').toLowerCase();
+        // Map old nutrition category to new structure if needed, or assume data is clean
+        const targetCat = cat === 'nutrition' ? 'nutrition' : cat;
+
+        if (categories[targetCat]) {
+            categories[targetCat].count++;
+            if (h.completed) categories[targetCat].done++;
+        }
+    });
 
     return (
-        <div ref={ref} className="share-card-hud">
-            {/* A. Background & Atmosphere */}
-            <div className="hud-grid-overlay"></div>
-            <div className="hud-glow-top-left"></div>
-            <div className="hud-glow-bottom-right"></div>
-            <div className="hud-scanline"></div>
+        <div ref={ref} className="share-card-v2">
+            {/* Ambient Background */}
+            <div className="bg-noise"></div>
+            <div className="bg-gradient"></div>
+            <div className="corner-accent top-left" style={{ borderColor: statusColor }}></div>
+            <div className="corner-accent bottom-right" style={{ borderColor: statusColor }}></div>
 
-            <div className="hud-content">
-                {/* B. Header */}
-                <div className="hud-header">
-                    <div className="brand-pill">
-                        <span className="brand-icon">⚡</span>
-                        <span className="brand-text">OPTIMAL PROTOCOL</span>
+            <div className="card-inner">
+                {/* --- HEADER --- */}
+                <header className="card-header">
+                    <div className="brand-tag">
+                        <span className="bolt">⚡</span> OPTIMAL PROTOCOL
                     </div>
-                    <div className="hud-date">{dateStr}</div>
-                </div>
+                    <div className="date-tag">
+                        {new Date().toLocaleDateString('en-US', { day: '2-digit', month: 'short' }).toUpperCase()}
+                    </div>
+                </header>
 
-                {/* C. Hero Section: Daily Rank */}
-                <div className="hud-hero">
-                    <div className="rank-circle-container">
-                        <div className="rank-circle-glow" style={{ boxShadow: `0 0 60px ${rank.glow}, inset 0 0 30px ${rank.glow}` }}></div>
-                        <div className="rank-circle-border" style={{ borderColor: rank.color }}></div>
-                        <div className="rank-grade" style={{ color: rank.color, textShadow: `0 0 20px ${rank.color}` }}>
-                            {rank.grade}
+                {/* --- MAIN REACTOR (Identity) --- */}
+                <section className="status-core">
+                    <div className="core-ring-outer" style={{ borderColor: `${statusColor}33` }}>
+                        <div className="core-ring-inner" style={{ borderColor: statusColor, boxShadow: statusGlow }}>
+                            <div className="streak-val">{streak}</div>
+                            <div className="streak-label">DAY STREAK</div>
                         </div>
                     </div>
-                    <div className="rank-label" style={{ color: rank.color }}>
-                        {rank.label}
-                    </div>
-                    <div className="rank-sub">
-                        /// SYNC RATE: {Math.round(completionRate * 100)}% ///
-                    </div>
-                </div>
 
-                {/* D. Stats Grid (Bento) */}
-                <div className="hud-stats-grid">
-                    <div className="hud-stat-box">
-                        <div className="stat-label">CURRENT STREAK</div>
-                        <div className="stat-value">
-                            {streak} <span className="stat-unit">DAYS</span>
-                            {streak > 7 && <span className="stat-flame">🔥</span>}
-                        </div>
+                    <div className="status-title-group">
+                        <div className="status-label">CURRENT DESIGNATION</div>
+                        <h1 className="status-main" style={{ color: statusColor, textShadow: statusGlow }}>
+                            {statusTitle}
+                        </h1>
+                        <div className="status-sub">/// {subMessage} ///</div>
                     </div>
-                    <div className="hud-stat-box">
-                        <div className="stat-label">PRIMARY FOCUS</div>
-                        <div className="stat-value-icon">
-                            {categoryIcons[focusCategory] || '⚡'} {focusCategory}
-                        </div>
-                    </div>
-                </div>
+                </section>
 
-                {/* E. Protocol Log */}
-                <div className="hud-log-section">
-                    <div className="log-header">{">>"} PROTOCOL LOG_</div>
-                    <div className="log-list">
-                        {todayHabits.slice(0, 6).map((habit, i) => (
-                            <div key={habit.id || i} className={`log-item ${habit.completed ? 'completed' : 'pending'}`}>
-                                <span className="log-prefix">{habit.completed ? '[x]' : '[ ]'}</span>
-                                <span className="log-text">{habit.text}</span>
+                {/* --- TACTICAL READOUT (Stats) --- */}
+                <section className="tactical-grid">
+                    {Object.values(categories).map((cat) => (
+                        cat.count > 0 && (
+                            <div key={cat.label} className="tactical-row">
+                                <div className="tactical-info">
+                                    <span className="t-label">{cat.label}</span>
+                                    <span className="t-val" style={{ color: cat.done === cat.count ? cat.color : '#666' }}>
+                                        {cat.done}/{cat.count}
+                                    </span>
+                                </div>
+                                <div className="tactical-bar-bg">
+                                    <div
+                                        className="tactical-bar-fill"
+                                        style={{
+                                            width: `${(cat.done / cat.count) * 100}%`,
+                                            backgroundColor: cat.color,
+                                            boxShadow: cat.done === cat.count ? `0 0 10px ${cat.color}` : 'none'
+                                        }}
+                                    ></div>
+                                </div>
                             </div>
-                        ))}
-                        {todayHabits.length > 6 && (
-                            <div className="log-more">...and {todayHabits.length - 6} more modules</div>
-                        )}
-                    </div>
-                </div>
+                        )
+                    ))}
+                </section>
 
-                {/* F. Footer (Acquisition) */}
-                <div className="hud-footer">
-                    <div className="footer-cta">
-                        <div className="cta-title">INITIALIZE YOUR TWIN</div>
-                        <div className="cta-sub">Available on iOS & Android</div>
+                {/* --- VIRAL FOOTER --- */}
+                <footer className="card-footer">
+                    <div className="footer-content">
+                        <div className="cta-text">
+                            <h2>INITIALIZE<br />YOUR TWIN</h2>
+                            <p>Available on iOS & Android</p>
+                        </div>
+                        <div className="qr-box">
+                            {/* Static QR for stability */}
+                            <img
+                                src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://optimalapp.com/download&color=000000&bgcolor=ffffff&margin=0"
+                                alt="Get App"
+                            />
+                        </div>
                     </div>
-                    <div className="footer-qr">
-                        <QRCodeSVG
-                            value="https://optimalapp.com/download"
-                            size={100}
-                            bgColor="#ffffff"
-                            fgColor="#000000"
-                            level="L"
-                            includeMargin={true}
-                        />
-                    </div>
-                </div>
+                </footer>
             </div>
         </div>
     );

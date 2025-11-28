@@ -1,323 +1,261 @@
-/* Cyberpunk HUD Share Card Styles */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&family=Share+Tech+Mono&display=swap');
 
-:root {
-    --neon-green: #39FF14;
-    --cyber-blue: #39D1FF;
-    --gold: #FFD139;
-    --danger: #ef4444;
-    --bg-dark: #050505;
-    --glass: rgba(255, 255, 255, 0.05);
-    --text-main: 'Outfit', sans-serif;
-    --text-tech: 'Share Tech Mono', monospace;
-}
-
-.share-card-hud {
+/* --- CONTAINER & BACKGROUND --- */
+.share-card-v2 {
     width: 1080px;
     height: 1920px;
-    background-color: var(--bg-dark);
+    background: #000000;
     position: relative;
     overflow: hidden;
     color: white;
-    font-family: var(--text-main);
+    font-family: 'Outfit', sans-serif;
     display: flex;
     flex-direction: column;
-    box-sizing: border-box;
 }
 
-/* A. Background & Atmosphere */
-.hud-grid-overlay {
+.bg-noise {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
+    inset: 0;
+    opacity: 0.07;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    pointer-events: none;
     z-index: 1;
-    pointer-events: none;
 }
 
-.hud-glow-top-left {
+.bg-gradient {
     position: absolute;
-    top: -200px;
-    left: -200px;
-    width: 800px;
-    height: 800px;
-    background: radial-gradient(circle, rgba(57, 255, 20, 0.15) 0%, transparent 70%);
-    z-index: 2;
-    pointer-events: none;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, #1a1a1a 0%, #000000 70%);
+    z-index: 0;
 }
 
-.hud-glow-bottom-right {
-    position: absolute;
-    bottom: -200px;
-    right: -200px;
-    width: 900px;
-    height: 900px;
-    background: radial-gradient(circle, rgba(57, 209, 255, 0.15) 0%, transparent 70%);
-    z-index: 2;
-    pointer-events: none;
-}
-
-.hud-scanline {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.2) 51%);
-    background-size: 100% 4px;
-    z-index: 3;
-    pointer-events: none;
-    opacity: 0.3;
-}
-
-.hud-content {
+.card-inner {
     position: relative;
     z-index: 10;
     height: 100%;
-    display: flex;
-    flex-direction: column;
     padding: 80px 60px;
-    justify-content: space-between;
-}
-
-/* B. Header */
-.hud-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 60px;
-}
-
-.brand-pill {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: var(--glass);
-    padding: 15px 30px;
-    border-radius: 100px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-}
-
-.brand-icon {
-    font-size: 32px;
-    color: var(--neon-green);
-}
-
-.brand-text {
-    font-family: var(--text-tech);
-    font-size: 24px;
-    letter-spacing: 2px;
-    font-weight: 700;
-}
-
-.hud-date {
-    font-family: var(--text-tech);
-    font-size: 28px;
-    opacity: 0.7;
-    letter-spacing: 2px;
-}
-
-/* C. Hero Section: Daily Rank */
-.hud-hero {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 60px;
+    justify-content: space-between;
 }
 
-.rank-circle-container {
-    position: relative;
-    width: 450px;
-    height: 450px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 40px;
-}
-
-.rank-circle-border {
+/* --- DECORATIONS --- */
+.corner-accent {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 8px solid;
-    border-radius: 50%;
-    opacity: 0.8;
-}
-
-.rank-circle-glow {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-}
-
-.rank-grade {
-    font-size: 280px;
-    font-weight: 900;
-    line-height: 1;
+    width: 150px;
+    height: 150px;
+    border: 4px solid transparent;
     z-index: 5;
 }
 
-.rank-label {
-    font-size: 48px;
-    font-weight: 800;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
+.top-left {
+    top: 40px;
+    left: 40px;
+    border-top-color: inherit;
+    border-left-color: inherit;
 }
 
-.rank-sub {
-    font-family: var(--text-tech);
-    font-size: 24px;
-    opacity: 0.5;
+.bottom-right {
+    bottom: 40px;
+    right: 40px;
+    border-bottom-color: inherit;
+    border-right-color: inherit;
+}
+
+/* --- HEADER --- */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 40px;
+}
+
+.brand-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 32px;
     letter-spacing: 2px;
-}
-
-/* D. Stats Grid */
-.hud-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 60px;
-}
-
-.hud-stat-box {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 30px;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.stat-label {
-    font-family: var(--text-tech);
-    font-size: 20px;
-    opacity: 0.5;
-    letter-spacing: 1px;
-}
-
-.stat-value {
-    font-size: 48px;
-    font-weight: 700;
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
-
-.stat-unit {
-    font-size: 20px;
-    opacity: 0.6;
-    font-weight: 400;
-}
-
-.stat-value-icon {
-    font-size: 36px;
-    font-weight: 700;
+    color: #fff;
     display: flex;
     align-items: center;
     gap: 15px;
 }
 
-/* E. Protocol Log */
-.hud-log-section {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 20px;
-    padding: 40px;
-    margin-bottom: 40px;
+.bolt {
+    color: #39FF14;
+}
+
+.date-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 32px;
+    color: #666;
+}
+
+/* --- STATUS CORE --- */
+.status-core {
     flex: 1;
-}
-
-.log-header {
-    font-family: var(--text-tech);
-    font-size: 24px;
-    color: var(--cyber-blue);
-    margin-bottom: 25px;
-    letter-spacing: 1px;
-}
-
-.log-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    margin-top: -50px;
+    /* Visual balance */
 }
 
-.log-item {
-    font-family: var(--text-tech);
-    font-size: 24px;
+.core-ring-outer {
+    width: 480px;
+    height: 480px;
+    border-radius: 50%;
+    border: 2px dashed;
     display: flex;
-    align-items: flex-start;
-    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    animation: spin 60s linear infinite;
 }
 
-.log-item.completed {
-    color: white;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+.core-ring-inner {
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    border: 8px solid;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
 }
 
-.log-item.pending {
-    color: rgba(255, 255, 255, 0.3);
+.streak-val {
+    font-size: 160px;
+    font-weight: 800;
+    line-height: 1;
 }
 
-.log-prefix {
-    font-weight: 700;
-    min-width: 40px;
-}
-
-.log-more {
-    font-family: var(--text-tech);
-    font-size: 20px;
-    opacity: 0.4;
+.streak-label {
+    font-size: 24px;
+    letter-spacing: 4px;
+    opacity: 0.5;
     margin-top: 10px;
-    padding-left: 55px;
 }
 
-/* F. Footer */
-.hud-footer {
+.status-title-group {
+    text-align: center;
+}
+
+.status-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 24px;
+    color: #666;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+}
+
+.status-main {
+    font-size: 110px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin: 0;
+    text-transform: uppercase;
+    font-style: italic;
+}
+
+.status-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 32px;
+    margin-top: 20px;
+    opacity: 0.7;
+    letter-spacing: 4px;
+}
+
+/* --- TACTICAL GRID --- */
+.tactical-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-bottom: 60px;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+}
+
+.tactical-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tactical-info {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 28px;
+}
+
+.t-label {
+    color: #aaa;
+}
+
+.t-val {
+    font-weight: bold;
+}
+
+.tactical-bar-bg {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.tactical-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+}
+
+/* --- FOOTER --- */
+.card-footer {
+    margin-top: auto;
+}
+
+.footer-content {
     background: white;
     color: black;
-    border-radius: 30px;
-    padding: 30px 40px;
+    padding: 30px 50px;
+    border-radius: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.footer-cta {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.cta-title {
-    font-size: 42px;
+.cta-text h2 {
+    font-size: 56px;
     font-weight: 900;
-    letter-spacing: -1px;
-    text-transform: uppercase;
+    line-height: 0.9;
+    margin: 0;
+    letter-spacing: -2px;
 }
 
-.cta-sub {
+.cta-text p {
     font-size: 24px;
-    font-weight: 500;
-    opacity: 0.7;
+    margin-top: 10px;
+    opacity: 0.6;
+    font-weight: 600;
 }
 
-.footer-qr {
-    background: white;
-    /* Ensure QR contrast */
-    padding: 5px;
-    border-radius: 10px;
+.qr-box img {
+    width: 130px;
+    height: 130px;
+    display: block;
+    mix-blend-mode: multiply;
+    /* Ensures perfect blend if not pure white */
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
