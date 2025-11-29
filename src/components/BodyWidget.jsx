@@ -146,11 +146,11 @@ const BodyWidget = ({ stats, userLevel = 1 }) => {
 
                 {/* Particles around */}
                 <Sparkles
-                    count={isGodMode ? 150 : (surge ? 100 : 50)}
-                    scale={isGodMode ? 6 : 3}
-                    size={isGodMode ? 5 : (surge ? 4 : 2)}
-                    speed={isGodMode ? 0.2 : (surge ? 2 : 0.4)}
-                    opacity={isGodMode ? 0.8 : 0.5}
+                    count={isGodMode ? 200 : (surge ? 100 : 50)}
+                    scale={isGodMode ? 3.5 : 3}
+                    size={isGodMode ? 6 : (surge ? 4 : 2)}
+                    speed={isGodMode ? 0.4 : (surge ? 2 : 0.4)}
+                    opacity={isGodMode ? 1 : 0.5}
                     color={glowColor}
                 />
 
